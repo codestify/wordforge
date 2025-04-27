@@ -1,0 +1,21 @@
+.vscode/
+.idea/
+vendor/
+coverage/
+
+# OS generated files
+*.DS_Store
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# Logs and environment files
+*.log
+*.env
+*.zip
+
+# Ignore PHPUnit and test output
+phpunit.xml
+phpunit.result.cache
