@@ -1,0 +1,15 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    excludePaths:
+        - vendor
+    tmpDir: ./tmp
+    ignoreErrors:
+        # Ignore WordPress-specific functions and superglobals
+        - '#Function [a-zA-Z0-9\\_]+ not found#'
+        - '#Access to an undefined property \\$wp#'
+        - '#Constant [A-Z_]+ not found#'
+        - '#Variable \$_[A-Z]+ in isset\(\) is never defined#'
+    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false

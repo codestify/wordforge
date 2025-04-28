@@ -48,14 +48,14 @@
     "fakerphp/faker": "^1.20"
   },
   "scripts": {
-    "test": "phpunit",
+    "test": "phpunit --no-coverage --colors=always",
     "test-coverage": "phpunit --coverage-html tests/coverage",
-    "test-unit": "phpunit --testsuite Unit",
-    "test-integration": "phpunit --testsuite Integration",
-    "test-feature": "phpunit --testsuite Feature",
-    "cs": "phpcs --standard=PSR12 src/",
-    "cs-fix": "phpcbf --standard=PSR12 src/",
-    "analyze": "phpstan analyse -l 5 src/",
+    "test-unit": "phpunit --testsuite Unit --no-coverage",
+    "test-integration": "phpunit --testsuite Integration --no-coverage",
+    "test-feature": "phpunit --testsuite Feature --no-coverage",
+    "cs": "phpcs --standard=phpcs.xml",
+    "cs-fix": "phpcbf --standard=phpcs.xml",
+    "analyze": "phpstan analyse -c phpstan.neon",
     "check": [
       "@cs",
       "@analyze",

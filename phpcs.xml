@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<ruleset name="WordForge Coding Standards">
+    <description>PSR-12 coding standards for WordForge</description>
+
+    <!-- Files to check -->
+    <file>src/</file>
+
+    <!-- Base ruleset -->
+    <rule ref="PSR12"/>
+
+    <!-- Exclude some rules for compatibility with older PHP versions -->
+    <config name="ignore_warnings_on_exit" value="1"/>
+    <config name="ignore_errors_on_exit" value="1"/>
+
+    <!-- Allow long lines in doc comments -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- Exclude vendor directory -->
+    <exclude-pattern>/vendor/</exclude-pattern>
+    <exclude-pattern>/tests/</exclude-pattern>
+</ruleset>

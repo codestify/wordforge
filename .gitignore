@@ -2,6 +2,8 @@
 .idea/
 vendor/
 coverage/
+tmp/
+tests/coverage/
 
 # OS generated files
 *.DS_Store
@@ -16,6 +18,7 @@ coverage/
 *.env
 *.zip
 
-# Ignore PHPUnit and test output
-phpunit.xml
-phpunit.result.cache
+# Ignore PHPUnit cache file
+.phpunit.result.cache
+
+# Don't ignore phpunit.xml as we want it in version control

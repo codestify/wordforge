@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>./tests/Unit</directory>
+        </testsuite>
+<!--        <testsuite name="Integration">-->
+<!--            <directory suffix="Test.php">./tests/Integration</directory>-->
+<!--        </testsuite>-->
+<!--        <testsuite name="Feature">-->
+<!--            <directory suffix="Test.php">./tests/Feature</directory>-->
+<!--        </testsuite>-->
+    </testsuites>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+            <directory>./tests</directory>
+        </exclude>
+        <report>
+            <clover outputFile="tests/coverage/clover.xml"/>
+            <html outputDirectory="tests/coverage" lowUpperBound="35" highLowerBound="70"/>
+            <text outputFile="php://stdout" showOnlySummary="true"/>
+        </report>
+    </coverage>
+    <php>
+        <ini name="display_errors" value="true"/>
+        <!-- Disable deprecation notices for PHP 8.x -->
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
+        <ini name="memory_limit" value="512M"/>
+        <server name="APP_ENV" value="testing"/>
+        <server name="WP_DEBUG" value="true"/>
+        <const name="WP_DEBUG" value="true"/>
+        <const name="WP_TESTS_DOMAIN" value="localhost"/>
+        <const name="WP_TESTS_EMAIL" value="admin@example.org"/>
+        <const name="WP_TESTS_TITLE" value="Test Blog"/>
+        <const name="WP_PHP_BINARY" value="php"/>
+        <const name="WORDFORGE_TESTING" value="true"/>
+    </php>
+</phpunit>
