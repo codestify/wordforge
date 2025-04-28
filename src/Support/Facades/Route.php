@@ -19,6 +19,19 @@ namespace WordForge\Support\Facades;
 class Route extends Facade
 {
     /**
+     * Handle dynamic, static calls to the object.
+     *
+     * @param  string  $method
+     * @param  array  $args
+     *
+     * @return mixed
+     */
+    public static function __callStatic(string $method, array $args)
+    {
+        return forward_static_call_array([\WordForge\Http\Router\Router::class, $method], $args);
+    }
+
+    /**
      * Get the facade accessor.
      *
      * @return string
@@ -26,17 +39,5 @@ class Route extends Facade
     protected static function getFacadeAccessor()
     {
         return \WordForge\Http\Router\Router::class;
-    }
-
-    /**
-     * Handle dynamic, static calls to the object.
-     *
-     * @param string $method
-     * @param array $args
-     * @return mixed
-     */
-    public static function __callStatic(string $method, array $args)
-    {
-        return forward_static_call_array([\WordForge\Http\Router\Router::class, $method], $args);
     }
 }

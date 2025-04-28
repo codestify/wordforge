@@ -8,6 +8,21 @@ use WordForge\Validation\FormRequest;
 class FormRequestTest extends TestCase
 {
     /**
+     * Test the constructor sets up the form request correctly.
+     */
+    public function testConstructor()
+    {
+        // Arrange
+        $wpRequest = $this->createMock(\WP_REST_Request::class);
+
+        // Act
+        $formRequest = $this->createFormRequest([]);
+
+        // Assert - just verify we can create the instance
+        $this->assertInstanceOf(FormRequest::class, $formRequest);
+    }
+
+    /**
      * Create a concrete implementation of the abstract FormRequest with direct data injection.
      */
     private function createFormRequest($testData = [])
@@ -58,27 +73,12 @@ class FormRequestTest extends TestCase
     }
 
     /**
-     * Test the constructor sets up the form request correctly.
-     */
-    public function testConstructor()
-    {
-        // Arrange
-        $wpRequest = $this->createMock(\WP_REST_Request::class);
-
-        // Act
-        $formRequest = $this->createFormRequest([]);
-
-        // Assert - just verify we can create the instance
-        $this->assertInstanceOf(FormRequest::class, $formRequest);
-    }
-
-    /**
      * Test the validate method when authorization passes.
      */
     public function testValidateWithAuthorization()
     {
         // Arrange - directly provide test data
-        $formRequest = $this->createFormRequest(['name' => 'Test User']);
+        $formRequest                  = $this->createFormRequest(['name' => 'Test User']);
         $formRequest->authorizeResult = true;
 
         // Verify data is accessible
@@ -99,7 +99,7 @@ class FormRequestTest extends TestCase
     public function testValidateWithoutAuthorization()
     {
         // Arrange
-        $formRequest = $this->createFormRequest(['name' => 'Test User']);
+        $formRequest                  = $this->createFormRequest(['name' => 'Test User']);
         $formRequest->authorizeResult = false;
 
         // Act
@@ -117,7 +117,7 @@ class FormRequestTest extends TestCase
     public function testValidateWithValidationFailure()
     {
         // Arrange
-        $formRequest = $this->createFormRequest(['name' => '']); // Empty name
+        $formRequest                  = $this->createFormRequest(['name' => '']); // Empty name
         $formRequest->authorizeResult = true;
 
         // Act
@@ -134,8 +134,8 @@ class FormRequestTest extends TestCase
     public function testValidateWithCustomMessages()
     {
         // Arrange
-        $formRequest = $this->createFormRequest(['name' => '']); // Empty name
-        $formRequest->authorizeResult = true;
+        $formRequest                     = $this->createFormRequest(['name' => '']); // Empty name
+        $formRequest->authorizeResult    = true;
         $formRequest->validationMessages = ['name.required' => 'Please provide your name'];
 
         // Act
@@ -156,8 +156,8 @@ class FormRequestTest extends TestCase
     public function testValidateWithCustomAttributes()
     {
         // Arrange
-        $formRequest = $this->createFormRequest(['first_name' => '']); // Empty first_name
-        $formRequest->validationRules = ['first_name' => 'required'];
+        $formRequest                       = $this->createFormRequest(['first_name' => '']); // Empty first_name
+        $formRequest->validationRules      = ['first_name' => 'required'];
         $formRequest->validationAttributes = ['first_name' => 'First Name'];
 
         // Act
@@ -179,13 +179,13 @@ class FormRequestTest extends TestCase
     public function testValidated()
     {
         // Arrange
-        $formRequest = $this->createFormRequest([
-            'name' => 'Test User',
+        $formRequest                  = $this->createFormRequest([
+            'name'  => 'Test User',
             'email' => 'test@example.com',
             'extra' => 'not in rules'
         ]);
         $formRequest->validationRules = [
-            'name' => 'required',
+            'name'  => 'required',
             'email' => 'required|email'
         ];
 
@@ -194,7 +194,7 @@ class FormRequestTest extends TestCase
 
         // Assert
         $this->assertEquals([
-            'name' => 'Test User',
+            'name'  => 'Test User',
             'email' => 'test@example.com'
         ], $validated);
 

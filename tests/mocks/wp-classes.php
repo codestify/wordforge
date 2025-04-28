@@ -7,11 +7,12 @@
  * for testing purposes.
  */
 
-if (!class_exists('WP_Error')) {
+if ( ! class_exists('WP_Error')) {
     /**
      * WordPress Error class
      */
-    class WP_Error {
+    class WP_Error
+    {
         /**
          * Error codes
          *
@@ -29,12 +30,13 @@ if (!class_exists('WP_Error')) {
         /**
          * Constructor
          *
-         * @param string|int $code Error code
-         * @param string $message Error message
-         * @param mixed $data Optional data
+         * @param  string|int  $code  Error code
+         * @param  string  $message  Error message
+         * @param  mixed  $data  Optional data
          */
-        public function __construct($code = '', $message = '', $data = '') {
-            if (!empty($code)) {
+        public function __construct($code = '', $message = '', $data = '')
+        {
+            if ( ! empty($code)) {
                 $this->add($code, $message, $data);
             }
         }
@@ -42,15 +44,17 @@ if (!class_exists('WP_Error')) {
         /**
          * Add an error
          *
-         * @param string|int $code Error code
-         * @param string $message Error message
-         * @param mixed $data Optional data
+         * @param  string|int  $code  Error code
+         * @param  string  $message  Error message
+         * @param  mixed  $data  Optional data
+         *
          * @return void
          */
-        public function add($code, $message, $data = '') {
+        public function add($code, $message, $data = '')
+        {
             $this->errors[$code][] = $message;
 
-            if (!empty($data)) {
+            if ( ! empty($data)) {
                 $this->error_data[$code] = $data;
             }
         }
@@ -60,22 +64,26 @@ if (!class_exists('WP_Error')) {
          *
          * @return array
          */
-        public function get_error_codes() {
+        public function get_error_codes()
+        {
             return array_keys($this->errors);
         }
 
         /**
          * Get error messages
          *
-         * @param string|int $code Optional error code
+         * @param  string|int  $code  Optional error code
+         *
          * @return array|string
          */
-        public function get_error_messages($code = '') {
+        public function get_error_messages($code = '')
+        {
             if (empty($code)) {
                 $all_messages = [];
                 foreach ($this->errors as $messages) {
                     $all_messages = array_merge($all_messages, $messages);
                 }
+
                 return $all_messages;
             }
 
@@ -85,10 +93,12 @@ if (!class_exists('WP_Error')) {
         /**
          * Get a single error message
          *
-         * @param string|int $code Error code
+         * @param  string|int  $code  Error code
+         *
          * @return string
          */
-        public function get_error_message($code = '') {
+        public function get_error_message($code = '')
+        {
             if (empty($code)) {
                 $codes = $this->get_error_codes();
                 if (empty($codes)) {
@@ -108,10 +118,12 @@ if (!class_exists('WP_Error')) {
         /**
          * Get error data
          *
-         * @param string|int $code Error code
+         * @param  string|int  $code  Error code
+         *
          * @return mixed
          */
-        public function get_error_data($code = '') {
+        public function get_error_data($code = '')
+        {
             if (empty($code)) {
                 $codes = $this->get_error_codes();
                 if (empty($codes)) {
@@ -125,11 +137,12 @@ if (!class_exists('WP_Error')) {
     }
 }
 
-if (!class_exists('WP_REST_Request')) {
+if ( ! class_exists('WP_REST_Request')) {
     /**
      * WordPress REST Request class
      */
-    class WP_REST_Request {
+    class WP_REST_Request
+    {
         /**
          * Request method
          *
@@ -189,13 +202,14 @@ if (!class_exists('WP_REST_Request')) {
         /**
          * Constructor
          *
-         * @param string $method Request method
-         * @param string $route Request route
-         * @param array $params Request parameters
+         * @param  string  $method  Request method
+         * @param  string  $route  Request route
+         * @param  array  $params  Request parameters
          */
-        public function __construct($method = 'GET', $route = '', $params = []) {
+        public function __construct($method = 'GET', $route = '', $params = [])
+        {
             $this->method = $method;
-            $this->route = $route;
+            $this->route  = $route;
             $this->params = $params;
         }
 
@@ -204,7 +218,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_params() {
+        public function get_params()
+        {
             return array_merge(
                 $this->url_params,
                 $this->query_params,
@@ -217,7 +232,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_url_params() {
+        public function get_url_params()
+        {
             return $this->url_params;
         }
 
@@ -226,7 +242,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_query_params() {
+        public function get_query_params()
+        {
             return $this->query_params;
         }
 
@@ -235,7 +252,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_body_params() {
+        public function get_body_params()
+        {
             return $this->body_params;
         }
 
@@ -244,10 +262,11 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_json_params() {
+        public function get_json_params()
+        {
             // If body_params contains JSON data, return that
             // Otherwise, try to parse the body content as JSON
-            if (empty($this->body_params) && !empty($this->get_body())) {
+            if (empty($this->body_params) && ! empty($this->get_body())) {
                 $json_params = json_decode($this->get_body(), true);
                 if (is_array($json_params)) {
                     return $json_params;
@@ -255,7 +274,7 @@ if (!class_exists('WP_REST_Request')) {
             }
 
             // If no parseable JSON found, return empty array
-            return !empty($this->body_params) ? $this->body_params : [];
+            return ! empty($this->body_params) ? $this->body_params : [];
         }
 
         /**
@@ -263,7 +282,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_file_params() {
+        public function get_file_params()
+        {
             return $this->file_params;
         }
 
@@ -272,7 +292,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return array
          */
-        public function get_headers() {
+        public function get_headers()
+        {
             return $this->headers;
         }
 
@@ -281,7 +302,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return string
          */
-        public function get_method() {
+        public function get_method()
+        {
             return $this->method;
         }
 
@@ -290,7 +312,8 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return string
          */
-        public function get_route() {
+        public function get_route()
+        {
             return $this->route;
         }
 
@@ -299,83 +322,97 @@ if (!class_exists('WP_REST_Request')) {
          *
          * @return string
          */
-        public function get_body() {
+        public function get_body()
+        {
             return json_encode($this->body_params);
         }
 
         /**
          * Set parameter
          *
-         * @param string $key Parameter key
-         * @param mixed $value Parameter value
+         * @param  string  $key  Parameter key
+         * @param  mixed  $value  Parameter value
+         *
          * @return void
          */
-        public function set_param($key, $value) {
+        public function set_param($key, $value)
+        {
             $this->params[$key] = $value;
         }
 
         /**
          * Set URL parameter
          *
-         * @param string $key Parameter key
-         * @param mixed $value Parameter value
+         * @param  string  $key  Parameter key
+         * @param  mixed  $value  Parameter value
+         *
          * @return void
          */
-        public function set_url_param($key, $value) {
+        public function set_url_param($key, $value)
+        {
             $this->url_params[$key] = $value;
         }
 
         /**
          * Set query parameter
          *
-         * @param string $key Parameter key
-         * @param mixed $value Parameter value
+         * @param  string  $key  Parameter key
+         * @param  mixed  $value  Parameter value
+         *
          * @return void
          */
-        public function set_query_param($key, $value) {
+        public function set_query_param($key, $value)
+        {
             $this->query_params[$key] = $value;
         }
 
         /**
          * Set body parameter
          *
-         * @param string $key Parameter key
-         * @param mixed $value Parameter value
+         * @param  string  $key  Parameter key
+         * @param  mixed  $value  Parameter value
+         *
          * @return void
          */
-        public function set_body_param($key, $value) {
+        public function set_body_param($key, $value)
+        {
             $this->body_params[$key] = $value;
         }
 
         /**
          * Set file parameter
          *
-         * @param string $key Parameter key
-         * @param mixed $value Parameter value
+         * @param  string  $key  Parameter key
+         * @param  mixed  $value  Parameter value
+         *
          * @return void
          */
-        public function set_file_param($key, $value) {
+        public function set_file_param($key, $value)
+        {
             $this->file_params[$key] = $value;
         }
 
         /**
          * Set header
          *
-         * @param string $key Header key
-         * @param mixed $value Header value
+         * @param  string  $key  Header key
+         * @param  mixed  $value  Header value
+         *
          * @return void
          */
-        public function set_header($key, $value) {
+        public function set_header($key, $value)
+        {
             $this->headers[strtolower($key)] = [$value];
         }
     }
 }
 
-if (!class_exists('WP_REST_Response')) {
+if ( ! class_exists('WP_REST_Response')) {
     /**
      * WordPress REST Response class
      */
-    class WP_REST_Response {
+    class WP_REST_Response
+    {
         /**
          * Response data
          *
@@ -400,13 +437,14 @@ if (!class_exists('WP_REST_Response')) {
         /**
          * Constructor
          *
-         * @param mixed $data Response data
-         * @param int $status Response status
-         * @param array $headers Response headers
+         * @param  mixed  $data  Response data
+         * @param  int  $status  Response status
+         * @param  array  $headers  Response headers
          */
-        public function __construct($data = null, $status = 200, $headers = []) {
-            $this->data = $data;
-            $this->status = $status;
+        public function __construct($data = null, $status = 200, $headers = [])
+        {
+            $this->data    = $data;
+            $this->status  = $status;
             $this->headers = $headers;
         }
 
@@ -415,18 +453,22 @@ if (!class_exists('WP_REST_Response')) {
          *
          * @return mixed
          */
-        public function get_data() {
+        public function get_data()
+        {
             return $this->data;
         }
 
         /**
          * Set response data
          *
-         * @param mixed $data
+         * @param  mixed  $data
+         *
          * @return $this
          */
-        public function set_data($data) {
+        public function set_data($data)
+        {
             $this->data = $data;
+
             return $this;
         }
 
@@ -435,18 +477,22 @@ if (!class_exists('WP_REST_Response')) {
          *
          * @return int
          */
-        public function get_status() {
+        public function get_status()
+        {
             return $this->status;
         }
 
         /**
          * Set response status
          *
-         * @param int $status
+         * @param  int  $status
+         *
          * @return $this
          */
-        public function set_status($status) {
+        public function set_status($status)
+        {
             $this->status = $status;
+
             return $this;
         }
 
@@ -455,49 +501,58 @@ if (!class_exists('WP_REST_Response')) {
          *
          * @return array
          */
-        public function get_headers() {
+        public function get_headers()
+        {
             return $this->headers;
         }
 
         /**
          * Set response headers
          *
-         * @param array $headers
+         * @param  array  $headers
+         *
          * @return $this
          */
-        public function set_headers($headers) {
+        public function set_headers($headers)
+        {
             $this->headers = $headers;
+
             return $this;
         }
 
         /**
          * Add/set a response header
          *
-         * @param string $key
-         * @param string $value
+         * @param  string  $key
+         * @param  string  $value
+         *
          * @return $this
          */
-        public function header($key, $value) {
+        public function header($key, $value)
+        {
             $this->headers[$key] = $value;
+
             return $this;
         }
     }
 }
 
-if (!class_exists('WP_REST_Server')) {
+if ( ! class_exists('WP_REST_Server')) {
     /**
      * WordPress REST Server class
      */
-    class WP_REST_Server {
+    class WP_REST_Server
+    {
         // Simple stub implementation
     }
 }
 
-if (!class_exists('WP_DB')) {
+if ( ! class_exists('WP_DB')) {
     /**
      * Mock WordPress DB class
      */
-    class WP_DB {
+    class WP_DB
+    {
         /**
          * Table prefix
          *
@@ -529,11 +584,13 @@ if (!class_exists('WP_DB')) {
         /**
          * Prepare SQL query with placeholders
          *
-         * @param string $query Query with placeholders
-         * @param array|mixed $args Values to replace placeholders
+         * @param  string  $query  Query with placeholders
+         * @param  array|mixed  $args  Values to replace placeholders
+         *
          * @return string Prepared query
          */
-        public function prepare($query, $args = []) {
+        public function prepare($query, $args = [])
+        {
             $this->last_query = $query;
 
             // Simple implementation to replace placeholders
@@ -541,14 +598,14 @@ if (!class_exists('WP_DB')) {
                 return $query;
             }
 
-            if (!is_array($args)) {
+            if ( ! is_array($args)) {
                 $args = [$args];
             }
 
             $i = 0;
 
-            return preg_replace_callback('/%[sdf]/', function($matches) use (&$i, $args) {
-                if (!isset($args[$i])) {
+            return preg_replace_callback('/%[sdf]/', function ($matches) use (&$i, $args) {
+                if ( ! isset($args[$i])) {
                     return 'NULL';
                 }
 
@@ -556,6 +613,7 @@ if (!class_exists('WP_DB')) {
                 if (is_string($value)) {
                     return "\"$value\"";
                 }
+
                 return $value;
             }, $query);
         }
@@ -563,112 +621,136 @@ if (!class_exists('WP_DB')) {
         /**
          * Insert a row
          *
-         * @param string $table Table name
-         * @param array $data Data to insert
-         * @param array|null $format Formats for values
+         * @param  string  $table  Table name
+         * @param  array  $data  Data to insert
+         * @param  array|null  $format  Formats for values
+         *
          * @return bool|int False on error, number of rows inserted on success
          */
-        public function insert($table, $data, $format = null) {
+        public function insert($table, $data, $format = null)
+        {
             $this->insert_id = mt_rand(1, 1000);
+
             return true;
         }
 
         /**
          * Update a row
          *
-         * @param string $table Table name
-         * @param array $data Data to update
-         * @param array $where Where conditions
-         * @param array|null $format Formats for values
-         * @param array|null $where_format Formats for where values
+         * @param  string  $table  Table name
+         * @param  array  $data  Data to update
+         * @param  array  $where  Where conditions
+         * @param  array|null  $format  Formats for values
+         * @param  array|null  $where_format  Formats for where values
+         *
          * @return bool|int False on error, number of rows updated on success
          */
-        public function update($table, $data, $where, $format = null, $where_format = null) {
+        public function update($table, $data, $where, $format = null, $where_format = null)
+        {
             return 1;
         }
 
         /**
          * Delete a row
          *
-         * @param string $table Table name
-         * @param array $where Where conditions
-         * @param array|null $where_format Formats for where values
+         * @param  string  $table  Table name
+         * @param  array  $where  Where conditions
+         * @param  array|null  $where_format  Formats for where values
+         *
          * @return bool|int False on error, number of rows deleted on success
          */
-        public function delete($table, $where, $where_format = null) {
+        public function delete($table, $where, $where_format = null)
+        {
             return 1;
         }
 
         /**
          * Perform a query and get results
          *
-         * @param string $query SQL query
-         * @param string $output Output format
+         * @param  string  $query  SQL query
+         * @param  string  $output  Output format
+         *
          * @return array Results
          */
-        public function get_results($query, $output = OBJECT) {
+        public function get_results($query, $output = OBJECT)
+        {
             $this->last_query = $query;
+
             return [];
         }
 
         /**
          * Get a single row
          *
-         * @param string $query SQL query
-         * @param string $output Output format
-         * @param int $row_offset Row offset
+         * @param  string  $query  SQL query
+         * @param  string  $output  Output format
+         * @param  int  $row_offset  Row offset
+         *
          * @return object|null Row or null
          */
-        public function get_row($query = null, $output = OBJECT, $row_offset = 0) {
+        public function get_row($query = null, $output = OBJECT, $row_offset = 0)
+        {
             $this->last_query = $query;
+
             return null;
         }
 
         /**
          * Get a single column
          *
-         * @param string $query SQL query
-         * @param int $x Column index
+         * @param  string  $query  SQL query
+         * @param  int  $x  Column index
+         *
          * @return array Column values
          */
-        public function get_col($query = null, $x = 0) {
+        public function get_col($query = null, $x = 0)
+        {
             $this->last_query = $query;
+
             return [];
         }
 
         /**
          * Get a single variable
          *
-         * @param string $query SQL query
-         * @param int $x Column index
-         * @param int $y Row index
+         * @param  string  $query  SQL query
+         * @param  int  $x  Column index
+         * @param  int  $y  Row index
+         *
          * @return mixed|null Variable or null
          */
-        public function get_var($query = null, $x = 0, $y = 0) {
+        public function get_var($query = null, $x = 0, $y = 0)
+        {
             $this->last_query = $query;
+
             return null;
         }
 
         /**
          * Execute a query
          *
-         * @param string $query SQL query
+         * @param  string  $query  SQL query
+         *
          * @return bool|int|resource False on error, affected rows on success
          */
-        public function query($query) {
+        public function query($query)
+        {
             $this->last_query = $query;
+
             return 1;
         }
 
         /**
          * Replace a row
          *
-         * @param string $table Table name
-         * @param array $data Data to replace
-         * @param array|null $format Formats for values
+         * @param  string  $table  Table name
+         * @param  array  $data  Data to replace
+         * @param  array|null  $format  Formats for values
+         *
          * @return bool|int False on error, affected rows on success
          */
-        public function replace($table, $data, $format = null) {
+        public function replace($table, $data, $format = null)
+        {
             return 1;
         }
     }

@@ -26,8 +26,9 @@ class ValidationException extends \Exception
     /**
      * Create a new validation exception instance.
      *
-     * @param Validator $validator
-     * @param string $message
+     * @param  Validator  $validator
+     * @param  string  $message
+     *
      * @return void
      */
     public function __construct(Validator $validator, $message = 'The given data was invalid.')
@@ -50,7 +51,8 @@ class ValidationException extends \Exception
     /**
      * Set the recommended status code to be used for the response.
      *
-     * @param int $status
+     * @param  int  $status
+     *
      * @return $this
      */
     public function status(int $status)

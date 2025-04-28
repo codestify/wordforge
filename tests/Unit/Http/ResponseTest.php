@@ -13,8 +13,8 @@ class ResponseTest extends TestCase
     public function testConstructor()
     {
         // Arrange & Act
-        $data = ['name' => 'Test User'];
-        $status = 201;
+        $data    = ['name' => 'Test User'];
+        $status  = 201;
         $headers = ['Content-Type' => 'application/json'];
 
         $response = new Response($data, $status, $headers);
@@ -56,7 +56,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => true,
-            'data' => $data
+            'data'    => $data
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -78,7 +78,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => false,
-            'error' => $message
+            'error'   => $message
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -93,7 +93,7 @@ class ResponseTest extends TestCase
     {
         // Arrange
         $errors = [
-            'name' => ['The name field is required.'],
+            'name'  => ['The name field is required.'],
             'email' => ['The email field must be a valid email address.']
         ];
 
@@ -106,7 +106,7 @@ class ResponseTest extends TestCase
         $expectedData = [
             'success' => false,
             'message' => $message,
-            'errors' => $errors
+            'errors'  => $errors
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -125,7 +125,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => false,
-            'error' => 'Resource not found'
+            'error'   => 'Resource not found'
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -147,7 +147,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => false,
-            'error' => 'Unauthorized'
+            'error'   => 'Unauthorized'
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -169,7 +169,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => false,
-            'error' => 'Forbidden'
+            'error'   => 'Forbidden'
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -207,7 +207,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => true,
-            'data' => $data
+            'data'    => $data
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -228,7 +228,7 @@ class ResponseTest extends TestCase
         // Assert
         $expectedData = [
             'success' => true,
-            'data' => $data
+            'data'    => $data
         ];
 
         $this->assertEquals($expectedData, $response->getData());
@@ -252,7 +252,7 @@ class ResponseTest extends TestCase
         // Test method chaining
         $this->assertSame($response, $response->header('Another-Header', 'Another-Value'));
         $this->assertEquals([
-            'X-Custom' => 'Value',
+            'X-Custom'       => 'Value',
             'Another-Header' => 'Another-Value'
         ], $response->getHeaders());
     }
@@ -267,22 +267,22 @@ class ResponseTest extends TestCase
 
         // Act
         $response->withHeaders([
-            'X-Custom' => 'Value',
+            'X-Custom'  => 'Value',
             'X-Another' => 'Another Value'
         ]);
 
         // Assert
         $this->assertEquals([
-            'X-Custom' => 'Value',
+            'X-Custom'  => 'Value',
             'X-Another' => 'Another Value'
         ], $response->getHeaders());
 
         // Test method chaining
         $this->assertSame($response, $response->withHeaders(['X-Third' => 'Third Value']));
         $this->assertEquals([
-            'X-Custom' => 'Value',
+            'X-Custom'  => 'Value',
             'X-Another' => 'Another Value',
-            'X-Third' => 'Third Value'
+            'X-Third'   => 'Third Value'
         ], $response->getHeaders());
     }
 
@@ -330,8 +330,8 @@ class ResponseTest extends TestCase
     public function testToWordPressMethod()
     {
         // Arrange
-        $data = ['name' => 'Test User'];
-        $status = 200;
+        $data    = ['name' => 'Test User'];
+        $status  = 200;
         $headers = ['X-Custom' => 'Value'];
 
         $response = new Response($data, $status, $headers);

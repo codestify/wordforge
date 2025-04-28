@@ -26,7 +26,8 @@ class RouteCollection
     /**
      * Add a route to the collection.
      *
-     * @param Route $route
+     * @param  Route  $route
+     *
      * @return void
      */
     public function add(Route $route)
@@ -47,7 +48,8 @@ class RouteCollection
     /**
      * Get a route by name.
      *
-     * @param string $name
+     * @param  string  $name
+     *
      * @return Route|null
      */
     public function getByName(string $name)
@@ -58,8 +60,9 @@ class RouteCollection
     /**
      * Add a named route to the collection.
      *
-     * @param string $name
-     * @param Route $route
+     * @param  string  $name
+     * @param  Route  $route
+     *
      * @return void
      */
     public function addNamed(string $name, Route $route)
@@ -84,7 +87,7 @@ class RouteCollection
      */
     public function clear()
     {
-        $this->routes = [];
+        $this->routes      = [];
         $this->namedRoutes = [];
     }
 }

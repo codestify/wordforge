@@ -3,41 +3,11 @@
 namespace Tests\Unit\Http\Router;
 
 use Tests\TestCase;
-use WordForge\Http\Router\Router;
 use WordForge\Http\Router\Route;
+use WordForge\Http\Router\Router;
 
 class RouterTest extends TestCase
 {
-    /**
-     * Reset the Router's static properties before each test.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Reset the router's static state
-        $reflectionClass = new \ReflectionClass(Router::class);
-
-        $routesProperty = $reflectionClass->getProperty('routes');
-        $routesProperty->setAccessible(true);
-        $routesProperty->setValue(null, null);
-
-        $groupStackProperty = $reflectionClass->getProperty('groupStack');
-        $groupStackProperty->setAccessible(true);
-        $groupStackProperty->setValue(null, []);
-
-        $namespaceProperty = $reflectionClass->getProperty('namespace');
-        $namespaceProperty->setAccessible(true);
-        $namespaceProperty->setValue(null, 'wordforge/v1');
-
-        $patternsProperty = $reflectionClass->getProperty('patterns');
-        $patternsProperty->setAccessible(true);
-        $patternsProperty->setValue(null, []);
-
-        // Initialize the router
-        Router::init();
-    }
-
     /**
      * Test the init method initializes the router.
      */
@@ -48,7 +18,7 @@ class RouterTest extends TestCase
 
         // Assert
         $reflectionClass = new \ReflectionClass(Router::class);
-        $routesProperty = $reflectionClass->getProperty('routes');
+        $routesProperty  = $reflectionClass->getProperty('routes');
         $routesProperty->setAccessible(true);
 
         $this->assertInstanceOf(\WordForge\Http\Router\RouteCollection::class, $routesProperty->getValue());
@@ -81,7 +51,7 @@ class RouterTest extends TestCase
         Router::pattern('id', '(\d+)');
 
         // Assert
-        $reflectionClass = new \ReflectionClass(Router::class);
+        $reflectionClass  = new \ReflectionClass(Router::class);
         $patternsProperty = $reflectionClass->getProperty('patterns');
         $patternsProperty->setAccessible(true);
 
@@ -96,12 +66,12 @@ class RouterTest extends TestCase
     {
         // Act
         Router::patterns([
-            'id' => '(\d+)',
+            'id'   => '(\d+)',
             'slug' => '([a-z0-9-]+)'
         ]);
 
         // Assert
-        $reflectionClass = new \ReflectionClass(Router::class);
+        $reflectionClass  = new \ReflectionClass(Router::class);
         $patternsProperty = $reflectionClass->getProperty('patterns');
         $patternsProperty->setAccessible(true);
 
@@ -119,7 +89,7 @@ class RouterTest extends TestCase
         $this->mockWpFunction('register_rest_route', true);
 
         // Act
-        Router::group(['prefix' => 'api'], function() {
+        Router::group(['prefix' => 'api'], function () {
             Router::get('posts', 'PostController@index');
         });
 
@@ -138,8 +108,8 @@ class RouterTest extends TestCase
         $this->mockWpFunction('register_rest_route', true);
 
         // Act
-        Router::group(['prefix' => 'api', 'middleware' => ['api']], function() {
-            Router::group(['prefix' => 'v1', 'middleware' => ['throttle']], function() {
+        Router::group(['prefix' => 'api', 'middleware' => ['api']], function () {
+            Router::group(['prefix' => 'v1', 'middleware' => ['throttle']], function () {
                 Router::get('posts', 'PostController@index');
             });
         });
@@ -150,7 +120,7 @@ class RouterTest extends TestCase
         $this->assertEquals('api/v1/posts', $routes[0]->getUri());
 
         // Check middleware - it's a bit more complex as it's a protected property
-        $reflectionClass = new \ReflectionClass($routes[0]);
+        $reflectionClass    = new \ReflectionClass($routes[0]);
         $middlewareProperty = $reflectionClass->getProperty('middleware');
         $middlewareProperty->setAccessible(true);
 
@@ -167,14 +137,14 @@ class RouterTest extends TestCase
         $this->mockWpFunction('register_rest_route', true);
 
         // Act
-        $getRoute = Router::get('posts', 'PostController@index');
-        $postRoute = Router::post('posts', 'PostController@store');
-        $putRoute = Router::put('posts/{id}', 'PostController@update');
-        $patchRoute = Router::patch('posts/{id}', 'PostController@patch');
-        $deleteRoute = Router::delete('posts/{id}', 'PostController@destroy');
+        $getRoute     = Router::get('posts', 'PostController@index');
+        $postRoute    = Router::post('posts', 'PostController@store');
+        $putRoute     = Router::put('posts/{id}', 'PostController@update');
+        $patchRoute   = Router::patch('posts/{id}', 'PostController@patch');
+        $deleteRoute  = Router::delete('posts/{id}', 'PostController@destroy');
         $optionsRoute = Router::options('posts', 'PostController@options');
-        $anyRoute = Router::any('any', 'AnyController@handle');
-        $matchRoute = Router::match(['GET', 'POST'], 'match', 'MatchController@handle');
+        $anyRoute     = Router::any('any', 'AnyController@handle');
+        $matchRoute   = Router::match(['GET', 'POST'], 'match', 'MatchController@handle');
 
         // Assert
         $routes = Router::getRoutes();
@@ -191,7 +161,8 @@ class RouterTest extends TestCase
         $this->assertEquals(['PATCH'], $methodsProperty->getValue($patchRoute));
         $this->assertEquals(['DELETE'], $methodsProperty->getValue($deleteRoute));
         $this->assertEquals(['OPTIONS'], $methodsProperty->getValue($optionsRoute));
-        $this->assertEquals(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $methodsProperty->getValue($anyRoute));
+        $this->assertEquals(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+            $methodsProperty->getValue($anyRoute));
         $this->assertEquals(['GET', 'POST'], $methodsProperty->getValue($matchRoute));
     }
 
@@ -319,7 +290,7 @@ class RouterTest extends TestCase
 
         // Act
         Router::apiResources([
-            'posts' => 'PostController',
+            'posts'    => 'PostController',
             'comments' => 'CommentController'
         ]);
 
@@ -352,7 +323,7 @@ class RouterTest extends TestCase
     {
         // Use reflection to access the protected method
         $reflectionClass = new \ReflectionClass(Router::class);
-        $method = $reflectionClass->getMethod('parseAction');
+        $method          = $reflectionClass->getMethod('parseAction');
         $method->setAccessible(true);
 
         // Test Controller@method format
@@ -360,8 +331,10 @@ class RouterTest extends TestCase
         $this->assertEquals(['controller' => 'PostController', 'method' => 'show'], $result);
 
         // Test callable/closure format
-        $closure = function() { return 'test'; };
-        $result = $method->invoke(null, $closure);
+        $closure = function () {
+            return 'test';
+        };
+        $result  = $method->invoke(null, $closure);
         $this->assertEquals(['callback' => $closure], $result);
 
         // Test array format
@@ -383,7 +356,7 @@ class RouterTest extends TestCase
         Router::setNamespace('custom/namespace');
 
         // Assert
-        $reflectionClass = new \ReflectionClass(Router::class);
+        $reflectionClass   = new \ReflectionClass(Router::class);
         $namespaceProperty = $reflectionClass->getProperty('namespace');
         $namespaceProperty->setAccessible(true);
 
@@ -401,13 +374,15 @@ class RouterTest extends TestCase
         // This depends on how your test framework handles mocks
         // For example, using PHPUnit's built-in functionality:
         global $rest_url_mock;
-        $rest_url_mock = function($path) {
-            return 'http://example.com/wp-json/' . $path;
+        $rest_url_mock = function ($path) {
+            return 'http://example.com/wp-json/'.$path;
         };
 
         // Override the function for this test
-        function rest_url($path) {
+        function rest_url($path)
+        {
             global $rest_url_mock;
+
             return $rest_url_mock($path);
         }
 
@@ -493,5 +468,35 @@ class RouterTest extends TestCase
 
         // Assert
         $this->assertCount(0, Router::getRoutes());
+    }
+
+    /**
+     * Reset the Router's static properties before each test.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Reset the router's static state
+        $reflectionClass = new \ReflectionClass(Router::class);
+
+        $routesProperty = $reflectionClass->getProperty('routes');
+        $routesProperty->setAccessible(true);
+        $routesProperty->setValue(null, null);
+
+        $groupStackProperty = $reflectionClass->getProperty('groupStack');
+        $groupStackProperty->setAccessible(true);
+        $groupStackProperty->setValue(null, []);
+
+        $namespaceProperty = $reflectionClass->getProperty('namespace');
+        $namespaceProperty->setAccessible(true);
+        $namespaceProperty->setValue(null, 'wordforge/v1');
+
+        $patternsProperty = $reflectionClass->getProperty('patterns');
+        $patternsProperty->setAccessible(true);
+        $patternsProperty->setValue(null, []);
+
+        // Initialize the router
+        Router::init();
     }
 }

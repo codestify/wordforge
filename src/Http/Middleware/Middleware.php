@@ -16,7 +16,8 @@ interface Middleware
     /**
      * Handle the incoming request.
      *
-     * @param Request $request
+     * @param  Request  $request
+     *
      * @return mixed
      */
     public function handle(Request $request);

@@ -19,11 +19,24 @@ abstract class Facade
     protected static $resolvedInstances = [];
 
     /**
-     * Get the facade accessor.
+     * Handle dynamic, static calls to the object.
      *
-     * @return string
+     * @param  string  $method
+     * @param  array  $args
+     *
+     * @return mixed
      */
-    abstract protected static function getFacadeAccessor();
+    public static function __callStatic(string $method, array $args)
+    {
+        $instance = static::getFacadeInstance();
+
+        // Handle cases where facade accessor is a class name with static methods
+        if (is_string($instance) && method_exists($instance, $method)) {
+            return forward_static_call_array([$instance, $method], $args);
+        }
+
+        return $instance->$method(...$args);
+    }
 
     /**
      * Get the resolved instance.
@@ -41,44 +54,35 @@ abstract class Facade
 
         // Then check if it's available in the service manager
         if (ServiceManager::has($accessor)) {
-            $instance = ServiceManager::get($accessor);
+            $instance                             = ServiceManager::get($accessor);
             static::$resolvedInstances[$accessor] = $instance;
+
             return $instance;
         }
 
         // Finally, fall back to the old way of creating an instance
-        $instance = static::createFacadeInstance($accessor);
+        $instance                             = static::createFacadeInstance($accessor);
         static::$resolvedInstances[$accessor] = $instance;
+
         return $instance;
     }
 
     /**
+     * Get the facade accessor.
+     *
+     * @return string
+     */
+    abstract protected static function getFacadeAccessor();
+
+    /**
      * Create a facade instance.
      *
-     * @param string $accessor
+     * @param  string  $accessor
+     *
      * @return object
      */
     protected static function createFacadeInstance(string $accessor)
     {
         return new $accessor();
-    }
-
-    /**
-     * Handle dynamic, static calls to the object.
-     *
-     * @param string $method
-     * @param array $args
-     * @return mixed
-     */
-    public static function __callStatic(string $method, array $args)
-    {
-        $instance = static::getFacadeInstance();
-        
-        // Handle cases where facade accessor is a class name with static methods
-        if (is_string($instance) && method_exists($instance, $method)) {
-            return forward_static_call_array([$instance, $method], $args);
-        }
-
-        return $instance->$method(...$args);
     }
 }

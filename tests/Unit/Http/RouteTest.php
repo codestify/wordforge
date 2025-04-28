@@ -13,9 +13,9 @@ class RouteTest extends TestCase
     public function testConstructor()
     {
         // Arrange
-        $methods = ['GET', 'POST'];
-        $uri = 'posts/{id}';
-        $action = 'PostController@show';
+        $methods   = ['GET', 'POST'];
+        $uri       = 'posts/{id}';
+        $action    = 'PostController@show';
         $namespace = 'wordforge/v1';
 
         // Act
@@ -41,7 +41,7 @@ class RouteTest extends TestCase
         $route = new Route(['GET'], 'posts/{category}/{slug}', 'PostController@show', 'wordforge/v1');
         $route->where([
             'category' => '([a-z]+)',
-            'slug' => '([a-z0-9-]+)'
+            'slug'     => '([a-z0-9-]+)'
         ]);
 
         $this->assertEquals('(?P<category>([a-z]+))/(?P<slug>([a-z0-9-]+))', $route->getWordPressPattern());
@@ -63,7 +63,7 @@ class RouteTest extends TestCase
         $route->middleware('auth');
 
         // Assert - using reflection to access protected properties
-        $reflectionClass = new \ReflectionClass($route);
+        $reflectionClass    = new \ReflectionClass($route);
         $middlewareProperty = $reflectionClass->getProperty('middleware');
         $middlewareProperty->setAccessible(true);
 
@@ -129,7 +129,7 @@ class RouteTest extends TestCase
         $this->assertContains('posts/(?P<category>([^/]+))/(?P<slug>([a-z0-9-]+))', $combinations);
 
         // Test with multiple optional parameters
-        $route = new Route(['GET'], 'posts/{category?}/{year?}/{slug?}', 'PostController@show', 'wordforge/v1');
+        $route        = new Route(['GET'], 'posts/{category?}/{year?}/{slug?}', 'PostController@show', 'wordforge/v1');
         $combinations = $route->getOptionalRouteCombinations();
 
         // Should have 2^3 = 8 combinations
@@ -142,7 +142,7 @@ class RouteTest extends TestCase
     public function testHandleRequest()
     {
         // Arrange
-        $route = new Route(['GET'], 'posts/{id}', function($request) {
+        $route = new Route(['GET'], 'posts/{id}', function ($request) {
             return new \WP_REST_Response(['id' => $request->param('id')], 200);
         }, 'wordforge/v1');
 
@@ -166,7 +166,8 @@ class RouteTest extends TestCase
     {
         // Create a mock controller class
         $mockController = new class {
-            public function show($request) {
+            public function show($request)
+            {
                 return new \WP_REST_Response(['id' => $request->param('id')], 200);
             }
         };
@@ -177,7 +178,7 @@ class RouteTest extends TestCase
         // Arrange
         $route = new Route(['GET'], 'posts/{id}', [
             'controller' => $controllerClass,
-            'method' => 'show'
+            'method'     => 'show'
         ], 'wordforge/v1');
 
         $wpRequest = $this->createMock(\WP_REST_Request::class);
@@ -236,7 +237,8 @@ class RouteTest extends TestCase
     {
         // Create a mock middleware class
         $mockMiddleware = new class {
-            public function handle($request) {
+            public function handle($request)
+            {
                 return true;
             }
         };
@@ -251,7 +253,7 @@ class RouteTest extends TestCase
         $wpRequest = $this->createMock(\WP_REST_Request::class);
 
         // Use reflection to access the protected runMiddleware method
-        $reflectionClass = new \ReflectionClass($route);
+        $reflectionClass     = new \ReflectionClass($route);
         $runMiddlewareMethod = $reflectionClass->getMethod('runMiddleware');
         $runMiddlewareMethod->setAccessible(true);
 
@@ -269,7 +271,8 @@ class RouteTest extends TestCase
     {
         // Create a mock middleware class that fails
         $mockMiddleware = new class {
-            public function handle($request) {
+            public function handle($request)
+            {
                 return new \WP_REST_Response(['error' => 'Unauthorized'], 403);
             }
         };
@@ -284,7 +287,7 @@ class RouteTest extends TestCase
         $wpRequest = $this->createMock(\WP_REST_Request::class);
 
         // Use reflection to access the protected runMiddleware method
-        $reflectionClass = new \ReflectionClass($route);
+        $reflectionClass     = new \ReflectionClass($route);
         $runMiddlewareMethod = $reflectionClass->getMethod('runMiddleware');
         $runMiddlewareMethod->setAccessible(true);
 
@@ -303,7 +306,7 @@ class RouteTest extends TestCase
     {
         // Use reflection to access the protected method
         $reflectionClass = new \ReflectionClass(Route::class);
-        $method = $reflectionClass->getMethod('convertUriToWordPressPattern');
+        $method          = $reflectionClass->getMethod('convertUriToWordPressPattern');
         $method->setAccessible(true);
 
         $route = new Route(['GET'], 'dummy', 'dummy', 'dummy');

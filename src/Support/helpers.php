@@ -287,9 +287,10 @@ if (! function_exists('wordforge_dd')) {
 if (! function_exists('wordforge_service')) {
     /**
      * Get a service from the service manager
-     * 
-     * @param string|null $name
-     * @param mixed ...$params
+     *
+     * @param  string|null  $name
+     * @param  mixed  ...$params
+     *
      * @return mixed
      */
     function wordforge_service($name = null, ...$params)
@@ -297,7 +298,7 @@ if (! function_exists('wordforge_service')) {
         if ($name === null) {
             return \WordForge\Support\ServiceManager::class;
         }
-        
+
         return \WordForge\Support\ServiceManager::get($name, ...$params);
     }
 }
@@ -305,8 +306,9 @@ if (! function_exists('wordforge_service')) {
 if (! function_exists('wordforge_has_service')) {
     /**
      * Check if a service exists
-     * 
-     * @param string $name
+     *
+     * @param  string  $name
+     *
      * @return bool
      */
     function wordforge_has_service($name)

@@ -8,6 +8,42 @@ use WordForge\Support\Facades\Facade;
 class FacadeTest extends TestCase
 {
     /**
+     * Test the getFacadeAccessor method must be implemented.
+     */
+    public function testGetFacadeAccessorMustBeImplemented()
+    {
+        // Create an anonymous class that extends Facade
+        $facade = new class extends Facade {
+            protected static function getFacadeAccessor()
+            {
+                // TODO: Implement getFacadeAccessor() method.
+            }
+        };
+
+        // Expect an error because getFacadeAccessor is not implemented
+        $this->expectException(\Error::class);
+
+        // Call a static method to trigger __callStatic
+        $facade::someMethod();
+    }
+
+    /**
+     * Test the getFacadeInstance method returns the correct instance.
+     */
+    public function testGetFacadeInstance()
+    {
+        // Arrange
+        $facade   = $this->createFacade();
+        $instance = $facade::callGetFacadeInstance();
+
+        // Act - call it again to get from cache
+        $cachedInstance = $facade::callGetFacadeInstance();
+
+        // Assert
+        $this->assertSame($instance, $cachedInstance);
+    }
+
+    /**
      * Create a concrete implementation of the abstract Facade.
      */
     private function createFacade()
@@ -21,7 +57,7 @@ class FacadeTest extends TestCase
 
             public function withParams($param1, $param2)
             {
-                return $param1 . '-' . $param2;
+                return $param1.'-'.$param2;
             }
         };
 
@@ -54,49 +90,13 @@ class FacadeTest extends TestCase
             public static function resetResolvedInstances()
             {
                 $reflectionClass = new \ReflectionClass(Facade::class);
-                $property = $reflectionClass->getProperty('resolvedInstances');
+                $property        = $reflectionClass->getProperty('resolvedInstances');
                 $property->setAccessible(true);
                 $property->setValue([]);
 
                 return true;
             }
         };
-    }
-
-    /**
-     * Test the getFacadeAccessor method must be implemented.
-     */
-    public function testGetFacadeAccessorMustBeImplemented()
-    {
-        // Create an anonymous class that extends Facade
-        $facade = new class extends Facade {
-            protected static function getFacadeAccessor()
-            {
-                // TODO: Implement getFacadeAccessor() method.
-            }
-        };
-
-        // Expect an error because getFacadeAccessor is not implemented
-        $this->expectException(\Error::class);
-
-        // Call a static method to trigger __callStatic
-        $facade::someMethod();
-    }
-
-    /**
-     * Test the getFacadeInstance method returns the correct instance.
-     */
-    public function testGetFacadeInstance()
-    {
-        // Arrange
-        $facade = $this->createFacade();
-        $instance = $facade::callGetFacadeInstance();
-
-        // Act - call it again to get from cache
-        $cachedInstance = $facade::callGetFacadeInstance();
-
-        // Assert
-        $this->assertSame($instance, $cachedInstance);
     }
 
     /**
@@ -129,7 +129,7 @@ class FacadeTest extends TestCase
 
         // Get reflection access to the protected static property
         $reflectionClass = new \ReflectionClass(Facade::class);
-        $property = $reflectionClass->getProperty('resolvedInstances');
+        $property        = $reflectionClass->getProperty('resolvedInstances');
         $property->setAccessible(true);
 
         // Act - Initial state should be empty

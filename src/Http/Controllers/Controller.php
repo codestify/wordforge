@@ -22,16 +22,17 @@ abstract class Controller
     /**
      * Register middleware on the controller.
      *
-     * @param string|array $middleware
-     * @param array $options
+     * @param  string|array  $middleware
+     * @param  array  $options
+     *
      * @return $this
      */
     public function middleware($middleware, array $options = [])
     {
-        foreach ((array) $middleware as $m) {
+        foreach ((array)$middleware as $m) {
             $this->middleware[] = [
                 'middleware' => $m,
-                'options' => $options,
+                'options'    => $options,
             ];
         }
 
@@ -51,8 +52,9 @@ abstract class Controller
     /**
      * Execute an action on the controller.
      *
-     * @param string $method
-     * @param array $parameters
+     * @param  string  $method
+     * @param  array  $parameters
+     *
      * @return \WordForge\Http\Response
      */
     public function callAction($method, $parameters)
@@ -63,9 +65,10 @@ abstract class Controller
     /**
      * Create a new response instance.
      *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function response($data = null, int $status = 200, array $headers = [])
@@ -76,9 +79,10 @@ abstract class Controller
     /**
      * Create a new JSON response.
      *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function json($data = null, int $status = 200, array $headers = [])
@@ -89,9 +93,10 @@ abstract class Controller
     /**
      * Create a new success response.
      *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function success($data = null, int $status = 200, array $headers = [])
@@ -102,9 +107,10 @@ abstract class Controller
     /**
      * Create a new error response.
      *
-     * @param string $message
-     * @param int $status
-     * @param array $headers
+     * @param  string  $message
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function error(string $message, int $status = 400, array $headers = [])
@@ -115,8 +121,9 @@ abstract class Controller
     /**
      * Create a new "not found" response.
      *
-     * @param string $message
-     * @param array $headers
+     * @param  string  $message
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function notFound(string $message = 'Resource not found', array $headers = [])
@@ -127,8 +134,9 @@ abstract class Controller
     /**
      * Create a new "forbidden" response.
      *
-     * @param string $message
-     * @param array $headers
+     * @param  string  $message
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function forbidden(string $message = 'Forbidden', array $headers = [])
@@ -139,7 +147,8 @@ abstract class Controller
     /**
      * Create a new "no content" response.
      *
-     * @param array $headers
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function noContent(array $headers = [])
@@ -150,8 +159,9 @@ abstract class Controller
     /**
      * Create a new "created" response.
      *
-     * @param mixed $data
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  array  $headers
+     *
      * @return \WordForge\Http\Response
      */
     public function created($data = null, array $headers = [])
@@ -162,10 +172,11 @@ abstract class Controller
     /**
      * Validate the given request with the given rules.
      *
-     * @param Request $request
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
+     * @param  Request  $request
+     * @param  array  $rules
+     * @param  array  $messages
+     * @param  array  $customAttributes
+     *
      * @return array|bool
      */
     public function validate(Request $request, array $rules, array $messages = [], array $customAttributes = [])

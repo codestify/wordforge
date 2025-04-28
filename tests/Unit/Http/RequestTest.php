@@ -18,18 +18,6 @@ class RequestTest extends TestCase
     protected $wpRequest;
 
     /**
-     * Set up the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Use a concrete WP_REST_Request instead of a PHPUnit mock
-        $this->wpRequest = new \WP_REST_Request();
-        $this->request = new Request($this->wpRequest);
-    }
-
-    /**
      * Test that getWordPressRequest returns the original WordPress request.
      */
     public function testGetWordPressRequest()
@@ -47,12 +35,14 @@ class RequestTest extends TestCase
 
         // Create a custom subclass to handle file params
         $wpRequest = new class extends \WP_REST_Request {
-            public function get_params() {
+            public function get_params()
+            {
                 // Return the body params directly
                 return $this->body_params;
             }
 
-            public function get_file_params() {
+            public function get_file_params()
+            {
                 return ['avatar' => ['tmp_name' => '/tmp/test.jpg']];
             }
         };
@@ -68,8 +58,8 @@ class RequestTest extends TestCase
 
         // Assert
         $expected = [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name'   => 'Test User',
+            'email'  => 'test@example.com',
             'avatar' => ['tmp_name' => '/tmp/test.jpg']
         ];
         $this->assertEquals($expected, $result);
@@ -160,7 +150,7 @@ class RequestTest extends TestCase
     {
         // Arrange with mocked headers
         $headers = [
-            'content-type' => ['application/json'],
+            'content-type'  => ['application/json'],
             'authorization' => ['Bearer token123']
         ];
 
@@ -181,7 +171,7 @@ class RequestTest extends TestCase
     {
         // Arrange with mocked headers
         $headers = [
-            'content-type' => ['application/json'],
+            'content-type'  => ['application/json'],
             'authorization' => ['Bearer token123']
         ];
 
@@ -315,7 +305,7 @@ class RequestTest extends TestCase
         $this->mockWpFunction('is_ssl', false);
 
         // This is a bit hacky but needed to test with $_SERVER
-        $backedUpServer = $_SERVER;
+        $backedUpServer       = $_SERVER;
         $_SERVER['HTTP_HOST'] = 'example.com';
 
         // Act
@@ -394,15 +384,14 @@ class RequestTest extends TestCase
         $this->assertEquals(['name' => 'Test User', 'email' => 'test@example.com'], $result);
     }
 
-
     /**
      * Test the user method returns the current user.
      */
     public function testUser()
     {
         // Arrange
-        $mockUser = new \stdClass();
-        $mockUser->ID = 1;
+        $mockUser             = new \stdClass();
+        $mockUser->ID         = 1;
         $mockUser->user_login = 'admin';
         $mockUser->user_email = 'admin@example.com';
 
@@ -429,5 +418,17 @@ class RequestTest extends TestCase
         // Test the true case
         $this->mockWpFunction('is_user_logged_in', true);
         $this->assertTrue($this->request->isAuthenticated());
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Use a concrete WP_REST_Request instead of a PHPUnit mock
+        $this->wpRequest = new \WP_REST_Request();
+        $this->request   = new Request($this->wpRequest);
     }
 }

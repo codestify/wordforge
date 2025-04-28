@@ -38,7 +38,8 @@ class Request
     /**
      * Create a new Request instance.
      *
-     * @param \WP_REST_Request $wpRequest
+     * @param  \WP_REST_Request  $wpRequest
+     *
      * @return void
      */
     public function __construct(\WP_REST_Request $wpRequest)
@@ -54,6 +55,31 @@ class Request
     public function getWordPressRequest()
     {
         return $this->wpRequest;
+    }
+
+    /**
+     * Get a specific input value from the request.
+     *
+     * @param  string|null  $key
+     * @param  mixed  $default
+     *
+     * @return mixed
+     */
+    public function input($key = null, $default = null)
+    {
+        $data = $this->all();
+
+        // If no key specified, return all data
+        if ($key === null) {
+            return $data;
+        }
+
+        // Handle dot notation (e.g., "user.name")
+        if (str_contains($key, '.')) {
+            return $this->getDotNotationValue($data, $key, $default);
+        }
+
+        return $data[$key] ?? $default;
     }
 
     /**
@@ -112,7 +138,7 @@ class Request
         // If it's not an array, try to manually parse the body
         $body = $this->wpRequest->get_body();
 
-        if (empty($body) || !is_string($body)) {
+        if (empty($body) || ! is_string($body)) {
             return [];
         }
 
@@ -129,7 +155,7 @@ class Request
             // Try removing quotes if it looks like a quoted JSON string
             if (preg_match('/^"(.*)"$/s', $body, $matches)) {
                 $unwrapped = stripcslashes($matches[1]);
-                $decoded = json_decode($unwrapped, true);
+                $decoded   = json_decode($unwrapped, true);
 
                 if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                     return $decoded;
@@ -141,44 +167,21 @@ class Request
     }
 
     /**
-     * Get a specific input value from the request.
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public function input($key = null, $default = null)
-    {
-        $data = $this->all();
-
-        // If no key specified, return all data
-        if ($key === null) {
-            return $data;
-        }
-
-        // Handle dot notation (e.g., "user.name")
-        if (str_contains($key, '.')) {
-            return $this->getDotNotationValue($data, $key, $default);
-        }
-
-        return $data[$key] ?? $default;
-    }
-
-    /**
      * Get a value using dot notation.
      *
-     * @param array $array
-     * @param string $key
-     * @param mixed $default
+     * @param  array  $array
+     * @param  string  $key
+     * @param  mixed  $default
+     *
      * @return mixed
      */
     protected function getDotNotationValue(array $array, string $key, $default = null)
     {
         $segments = explode('.', $key);
-        $value = $array;
+        $value    = $array;
 
         foreach ($segments as $segment) {
-            if (!is_array($value) || !array_key_exists($segment, $value)) {
+            if (! is_array($value) || ! array_key_exists($segment, $value)) {
                 return $default;
             }
             $value = $value[$segment];
@@ -190,7 +193,8 @@ class Request
     /**
      * Check if the request has a given input item.
      *
-     * @param string|array $key
+     * @param  string|array  $key
+     *
      * @return bool
      */
     public function has($key)
@@ -202,13 +206,13 @@ class Request
             // Handle dot notation
             if (str_contains($value, '.')) {
                 $exists = $this->getDotNotationValue($data, $value, '__NOT_EXISTS__') !== '__NOT_EXISTS__';
-                if (!$exists) {
+                if (! $exists) {
                     return false;
                 }
                 continue;
             }
 
-            if (!array_key_exists($value, $data)) {
+            if (! array_key_exists($value, $data)) {
                 return false;
             }
         }
@@ -219,13 +223,14 @@ class Request
     /**
      * Get multiple input values from the request.
      *
-     * @param array $keys
+     * @param  array  $keys
+     *
      * @return array
      */
     public function only(array $keys)
     {
         $results = [];
-        $data = $this->all();
+        $data    = $this->all();
 
         foreach ($keys as $key) {
             // Handle dot notation
@@ -246,9 +251,41 @@ class Request
     }
 
     /**
+     * Set an array item to a given value using "dot" notation.
+     *
+     * @param  array  $array
+     * @param  string  $key
+     * @param  mixed  $value
+     *
+     * @return array
+     */
+    protected function arraySet(&$array, $key, $value)
+    {
+        if (is_null($key)) {
+            return $array = $value;
+        }
+
+        $keys        = explode('.', $key);
+        $lastSegment = array_pop($keys);
+        $current     = &$array;
+
+        foreach ($keys as $segment) {
+            if (! isset($current[$segment]) || ! is_array($current[$segment])) {
+                $current[$segment] = [];
+            }
+            $current = &$current[$segment];
+        }
+
+        $current[$lastSegment] = $value;
+
+        return $array;
+    }
+
+    /**
      * Get all input except for a specified array of items.
      *
-     * @param array $keys
+     * @param  array  $keys
+     *
      * @return array
      */
     public function except(array $keys)
@@ -269,71 +306,27 @@ class Request
     }
 
     /**
-     * Set an array item to a given value using "dot" notation.
-     *
-     * @param array $array
-     * @param string $key
-     * @param mixed $value
-     * @return array
-     */
-    protected function arraySet(&$array, $key, $value)
-    {
-        if (is_null($key)) {
-            return $array = $value;
-        }
-
-        $keys = explode('.', $key);
-        $lastSegment = array_pop($keys);
-        $current = &$array;
-
-        foreach ($keys as $segment) {
-            if (!isset($current[$segment]) || !is_array($current[$segment])) {
-                $current[$segment] = [];
-            }
-            $current = &$current[$segment];
-        }
-
-        $current[$lastSegment] = $value;
-
-        return $array;
-    }
-
-    /**
      * Unset an array item using "dot" notation.
      *
-     * @param array $array
-     * @param string $key
+     * @param  array  $array
+     * @param  string  $key
+     *
      * @return void
      */
     protected function arrayUnset(&$array, $key)
     {
-        $keys = explode('.', $key);
+        $keys        = explode('.', $key);
         $lastSegment = array_pop($keys);
-        $current = &$array;
+        $current     = &$array;
 
         foreach ($keys as $segment) {
-            if (!isset($current[$segment]) || !is_array($current[$segment])) {
+            if (! isset($current[$segment]) || ! is_array($current[$segment])) {
                 return;
             }
             $current = &$current[$segment];
         }
 
         unset($current[$lastSegment]);
-    }
-
-    /**
-     * Get a header from the request.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public function header(string $key, $default = null)
-    {
-        $headers = $this->wpRequest->get_headers();
-        $key = strtolower($key);
-
-        return $headers[$key][0] ?? $default;
     }
 
     /**
@@ -349,8 +342,9 @@ class Request
     /**
      * Get a route parameter.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
+     *
      * @return mixed
      */
     public function param(string $key, $default = null)
@@ -391,6 +385,19 @@ class Request
     }
 
     /**
+     * Get the full URL for the request.
+     *
+     * @return string
+     */
+    public function url()
+    {
+        $scheme = $this->secure() ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        return $scheme . '://' . $host . $this->uri();
+    }
+
+    /**
      * Determine if the request is over HTTPS.
      *
      * @return bool
@@ -411,19 +418,6 @@ class Request
     }
 
     /**
-     * Get the full URL for the request.
-     *
-     * @return string
-     */
-    public function url()
-    {
-        $scheme = $this->secure() ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-        return $scheme . '://' . $host . $this->uri();
-    }
-
-    /**
      * Get the request body content.
      *
      * @return string
@@ -436,8 +430,9 @@ class Request
     /**
      * Set a request attribute.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param  string  $key
+     * @param  mixed  $value
+     *
      * @return $this
      */
     public function setAttribute(string $key, $value)
@@ -450,8 +445,9 @@ class Request
     /**
      * Get a request attribute.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
+     *
      * @return mixed
      */
     public function getAttribute(string $key, $default = null)
@@ -482,7 +478,8 @@ class Request
     /**
      * Check if the authenticated user has a given capability.
      *
-     * @param string $capability
+     * @param  string  $capability
+     *
      * @return bool
      */
     public function userCan(string $capability)
@@ -521,18 +518,6 @@ class Request
     }
 
     /**
-     * Determine if the request is a JSON request.
-     *
-     * @return bool
-     */
-    public function isJson()
-    {
-        $contentType = $this->header('Content-Type', '');
-        return str_contains($contentType, '/json') ||
-               str_contains($contentType, '+json');
-    }
-
-    /**
      * Determine if the current request is asking for JSON.
      *
      * @return bool
@@ -540,33 +525,38 @@ class Request
     public function wantsJson()
     {
         $acceptable = $this->header('Accept', '');
+
         return $this->isJson() || str_contains($acceptable, '/json') ||
                str_contains($acceptable, '+json');
     }
 
     /**
-     * Validate the given request with the given validation rules.
+     * Get a header from the request.
      *
-     * @param array $rules
-     * @param array $messages
-     * @param array $customAttributes
+     * @param  string  $key
+     * @param  mixed  $default
      *
-     * @return bool|ValidationException
+     * @return mixed
      */
-    public function validate(array $rules, array $messages = [], array $customAttributes = [])
+    public function header(string $key, $default = null)
     {
-        $validator = new Validator(
-            $this->all(),
-            $rules,
-            $messages,
-            $customAttributes
-        );
+        $headers = $this->wpRequest->get_headers();
+        $key     = strtolower($key);
 
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
+        return $headers[$key][0] ?? $default;
+    }
 
-        return true;
+    /**
+     * Determine if the request is a JSON request.
+     *
+     * @return bool
+     */
+    public function isJson()
+    {
+        $contentType = $this->header('Content-Type', '');
+
+        return str_contains($contentType, '/json') ||
+               str_contains($contentType, '+json');
     }
 
     /**
@@ -584,7 +574,7 @@ class Request
         $this->validate($rules, $messages, $customAttributes);
 
         $results = [];
-        $data = $this->all();
+        $data    = $this->all();
 
         foreach ($rules as $key => $rule) {
             // Handle dot notation keys
@@ -602,5 +592,30 @@ class Request
         }
 
         return $results;
+    }
+
+    /**
+     * Validate the given request with the given validation rules.
+     *
+     * @param  array  $rules
+     * @param  array  $messages
+     * @param  array  $customAttributes
+     *
+     * @return bool|ValidationException
+     */
+    public function validate(array $rules, array $messages = [], array $customAttributes = [])
+    {
+        $validator = new Validator(
+            $this->all(),
+            $rules,
+            $messages,
+            $customAttributes
+        );
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator);
+        }
+
+        return true;
     }
 }
