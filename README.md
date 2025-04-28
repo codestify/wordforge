@@ -1,4 +1,4 @@
-# WordForge: An Opinionated SLIM MVC architecture for building Wordpress Plugins
+# WordForge: An Opinionated SLIM MVC architecture for building WordPress Plugins
 
 [![CI Status](https://github.com/codestify/wordforge/actions/workflows/ci.yml/badge.svg)](https://github.com/codestify/wordforge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
