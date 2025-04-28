@@ -29,26 +29,6 @@ class TestServiceProvider extends ServiceProvider
 
 class ServiceProviderManagerTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Reset the ServiceProviderManager state
-        $reflection = new \ReflectionClass(ServiceProviderManager::class);
-
-        $providersProperty = $reflection->getProperty('providers');
-        $providersProperty->setAccessible(true);
-        $providersProperty->setValue(null, []);
-
-        $registeredProperty = $reflection->getProperty('registered');
-        $registeredProperty->setAccessible(true);
-        $registeredProperty->setValue(null, []);
-
-        $bootedProperty = $reflection->getProperty('booted');
-        $bootedProperty->setAccessible(true);
-        $bootedProperty->setValue(null, []);
-    }
-
     public function testRegisterAddsProvidersToList()
     {
         // Arrange
@@ -58,9 +38,10 @@ class ServiceProviderManagerTest extends TestCase
         $actionsCalled = [];
         $this->mockWpFunction('add_action', function ($hook, $callback, $priority = 10) use (&$actionsCalled) {
             $actionsCalled[] = [
-                'hook' => $hook,
+                'hook'     => $hook,
                 'priority' => $priority
             ];
+
             return true;
         });
 
@@ -68,7 +49,7 @@ class ServiceProviderManagerTest extends TestCase
         ServiceProviderManager::register([$provider]);
 
         // Assert
-        $reflection = new \ReflectionClass(ServiceProviderManager::class);
+        $reflection        = new \ReflectionClass(ServiceProviderManager::class);
         $providersProperty = $reflection->getProperty('providers');
         $providersProperty->setAccessible(true);
         $providers = $providersProperty->getValue();
@@ -92,7 +73,7 @@ class ServiceProviderManagerTest extends TestCase
 
         // Use reflection to access protected method
         $reflection = new \ReflectionClass(ServiceProviderManager::class);
-        $method = $reflection->getMethod('initializeProvider');
+        $method     = $reflection->getMethod('initializeProvider');
         $method->setAccessible(true);
 
         // Act
@@ -171,7 +152,7 @@ class ServiceProviderManagerTest extends TestCase
         // Get the instance to reset boot flag
         $registeredProperty = $reflection->getProperty('registered');
         $registeredProperty->setAccessible(true);
-        $registered = $registeredProperty->getValue();
+        $registered                        = $registeredProperty->getValue();
         $registered[$provider]->bootCalled = false;
 
         // Act
@@ -179,5 +160,25 @@ class ServiceProviderManagerTest extends TestCase
 
         // Assert - boot should not be called again
         $this->assertFalse($registered[$provider]->bootCalled);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Reset the ServiceProviderManager state
+        $reflection = new \ReflectionClass(ServiceProviderManager::class);
+
+        $providersProperty = $reflection->getProperty('providers');
+        $providersProperty->setAccessible(true);
+        $providersProperty->setValue(null, []);
+
+        $registeredProperty = $reflection->getProperty('registered');
+        $registeredProperty->setAccessible(true);
+        $registeredProperty->setValue(null, []);
+
+        $bootedProperty = $reflection->getProperty('booted');
+        $bootedProperty->setAccessible(true);
+        $bootedProperty->setValue(null, []);
     }
 }

@@ -13,36 +13,6 @@ class QueryBuilderTest extends TestCase
     protected $wpdb;
 
     /**
-     * Set up the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Create a mock of WordPress global $wpdb object
-        $this->wpdb         = $this->getMockBuilder(\stdClass::class)
-                                   ->addMethods(['prepare', 'query', 'get_results', 'insert', 'update', 'delete'])
-                                   ->getMock();
-        $this->wpdb->prefix = 'wp_';
-
-        // Make the mock available globally
-        global $wpdb;
-        $wpdb = $this->wpdb;
-    }
-
-    /**
-     * Get a fresh query builder instance.
-     *
-     * @param  string  $table
-     *
-     * @return QueryBuilder
-     */
-    protected function getBuilder($table = 'posts')
-    {
-        return new QueryBuilder($table);
-    }
-
-    /**
      * Test a basic select statement.
      */
     public function testBasicSelect()
@@ -61,6 +31,18 @@ class QueryBuilderTest extends TestCase
         $builder = $this->getBuilder();
         $sql     = $builder->select(['id', 'post_title', 'post_content', 'post_date'])->toSql();
         $this->assertEquals('SELECT id, post_title, post_content, post_date FROM wp_posts', $sql);
+    }
+
+    /**
+     * Get a fresh query builder instance.
+     *
+     * @param  string  $table
+     *
+     * @return QueryBuilder
+     */
+    protected function getBuilder($table = 'posts')
+    {
+        return new QueryBuilder($table);
     }
 
     /**
@@ -524,9 +506,6 @@ class QueryBuilderTest extends TestCase
     /**
      * Test raw query SQL.
      */
-    /**
-     * Test raw query SQL.
-     */
     public function testRawSql()
     {
         // Create a new instance of the mock for each test
@@ -563,8 +542,31 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
+     * Test raw query SQL.
+     */
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a mock of WordPress global $wpdb object
+        $this->wpdb         = $this->getMockBuilder(\stdClass::class)
+                                   ->addMethods(['prepare', 'query', 'get_results', 'insert', 'update', 'delete'])
+                                   ->getMock();
+        $this->wpdb->prefix = 'wp_';
+
+        // Make the mock available globally
+        global $wpdb;
+        $wpdb = $this->wpdb;
+    }
+
+    /**
      * Test transaction SQL.
      */
+
     /**
      * Test transaction SQL.
      */

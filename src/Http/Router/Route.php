@@ -180,6 +180,26 @@ class Route
     }
 
     /**
+     * Set route attributes from a group.
+     *
+     * @param  array  $attributes
+     *
+     * @return $this
+     */
+    public function setAttributes(array $attributes)
+    {
+        if (isset($attributes['middleware'])) {
+            $this->middleware = array_merge($this->middleware, (array)$attributes['middleware']);
+        }
+
+        if (isset($attributes['where'])) {
+            $this->where($attributes['where']);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set a regular expression requirement on the route.
      *
      * @param  string|array  $name
@@ -200,26 +220,6 @@ class Route
         $this->patterns[$name] = $expression;
         // Update the WordPress pattern with the new constraints
         $this->wpPattern = $this->convertUriToWordPressPattern($this->uri);
-
-        return $this;
-    }
-
-    /**
-     * Set route attributes from a group.
-     *
-     * @param  array  $attributes
-     *
-     * @return $this
-     */
-    public function setAttributes(array $attributes)
-    {
-        if (isset($attributes['middleware'])) {
-            $this->middleware = array_merge($this->middleware, (array)$attributes['middleware']);
-        }
-
-        if (isset($attributes['where'])) {
-            $this->where($attributes['where']);
-        }
 
         return $this;
     }
@@ -307,6 +307,26 @@ class Route
     }
 
     /**
+     * Register the route with WordPress REST API.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        if ($this->hasOptionalParameters()) {
+            // For routes with optional parameters, register multiple routes
+            $patterns = $this->getOptionalRouteCombinations();
+
+            foreach ($patterns as $pattern) {
+                $this->registerWordPressRoute($pattern);
+            }
+        } else {
+            // For simple routes, just register once
+            $this->registerWordPressRoute($this->wpPattern);
+        }
+    }
+
+    /**
      * Check if the route has any optional parameters.
      *
      * @return bool
@@ -372,26 +392,6 @@ class Route
         }
 
         return array_unique($combinations);
-    }
-
-    /**
-     * Register the route with WordPress REST API.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        if ($this->hasOptionalParameters()) {
-            // For routes with optional parameters, register multiple routes
-            $patterns = $this->getOptionalRouteCombinations();
-
-            foreach ($patterns as $pattern) {
-                $this->registerWordPressRoute($pattern);
-            }
-        } else {
-            // For simple routes, just register once
-            $this->registerWordPressRoute($this->wpPattern);
-        }
     }
 
     /**
@@ -538,20 +538,6 @@ class Route
     }
 
     /**
-     * Check permissions for the route.
-     *
-     * @param  \WP_REST_Request  $request
-     *
-     * @return bool|\WP_Error
-     */
-    public function checkPermissions(\WP_REST_Request $request)
-    {
-        // By default, always return true
-        // Permissions will be handled by middleware
-        return true;
-    }
-
-    /**
      * Run the route middleware stack.
      *
      * @param  Request  $request
@@ -642,5 +628,19 @@ class Route
         return new \WP_REST_Response([
             'message' => 'Route action not found'
         ], 500);
+    }
+
+    /**
+     * Check permissions for the route.
+     *
+     * @param  \WP_REST_Request  $request
+     *
+     * @return bool|\WP_Error
+     */
+    public function checkPermissions(\WP_REST_Request $request)
+    {
+        // By default, always return true
+        // Permissions will be handled by middleware
+        return true;
     }
 }

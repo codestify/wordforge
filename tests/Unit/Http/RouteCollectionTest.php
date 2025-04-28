@@ -3,8 +3,8 @@
 namespace Tests\Unit\Http\Router;
 
 use Tests\TestCase;
-use WordForge\Http\Router\RouteCollection;
 use WordForge\Http\Router\Route;
+use WordForge\Http\Router\RouteCollection;
 
 class RouteCollectionTest extends TestCase
 {
@@ -12,16 +12,6 @@ class RouteCollectionTest extends TestCase
      * @var RouteCollection
      */
     protected $collection;
-
-    /**
-     * Set up the test environment.
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->collection = new RouteCollection();
-    }
 
     /**
      * Test the add method adds a route to the collection.
@@ -173,5 +163,15 @@ class RouteCollectionTest extends TestCase
 
         // Assert - The second route should override the first
         $this->assertSame($route2, $this->collection->getByName('posts.index'));
+    }
+
+    /**
+     * Set up the test environment.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->collection = new RouteCollection();
     }
 }

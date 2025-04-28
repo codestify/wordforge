@@ -28,7 +28,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Create a new collection.
      *
-     * @param mixed $items
+     * @param  mixed  $items
+     *
      * @return void
      */
     public function __construct($items = [])
@@ -37,14 +38,35 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Create a new collection instance.
+     * Results array of items from Collection or Arrayable.
      *
-     * @param mixed $items
-     * @return static
+     * @param  mixed  $items
+     *
+     * @return array
      */
-    public static function make($items = [])
+    protected function getArrayableItems($items)
     {
-        return new static($items);
+        if (is_array($items)) {
+            return $items;
+        }
+
+        if ($items instanceof self) {
+            return $items->all();
+        }
+
+        if ($items instanceof Arrayable) {
+            return $items->toArray();
+        }
+
+        if ($items instanceof JsonSerializable) {
+            return $items->jsonSerialize();
+        }
+
+        if ($items instanceof Traversable) {
+            return iterator_to_array($items);
+        }
+
+        return (array)$items;
     }
 
     /**
@@ -58,23 +80,103 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Get the collection of items as a plain array.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return array_map(function ($value) {
+            if ($value instanceof Arrayable) {
+                return $value->toArray();
+            } elseif (is_object($value) && method_exists($value, 'toArray')) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, $this->items);
+    }
+
+    /**
+     * Convert the object into something JSON serializable.
+     *
+     * @return array
+     */
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_map(function ($value) {
+            if ($value instanceof JsonSerializable) {
+                return $value->jsonSerialize();
+            } elseif ($value instanceof Arrayable) {
+                return $value->toArray();
+            } elseif (is_object($value) && method_exists($value, 'toArray')) {
+                return $value->toArray();
+            }
+
+            return $value;
+        }, $this->items);
+    }
+
+    /**
+     * Create a new collection instance.
+     *
+     * @param  mixed  $items
+     *
+     * @return static
+     */
+    public static function make($items = [])
+    {
+        return new static($items);
+    }
+
+    /**
+     * Add a method to the collection.
+     *
+     * @param  string  $name
+     * @param  callable  $callback
+     *
+     * @return void
+     */
+    public static function macro($name, callable $callback)
+    {
+        static::$macros[$name] = $callback;
+    }
+
+    /**
      * Run a map over each of the items.
      *
-     * @param callable $callback
+     * @param  callable  $callback
+     *
      * @return static
      */
     public function map(callable $callback)
     {
-        $keys = array_keys($this->items);
+        $keys  = array_keys($this->items);
         $items = array_map($callback, $this->items, $keys);
 
         return new static(array_combine($keys, $items));
     }
 
     /**
+     * Reject items using the given callback.
+     *
+     * @param  callable  $callback
+     *
+     * @return static
+     */
+    public function reject(callable $callback)
+    {
+        return $this->filter(function ($item, $key) use ($callback) {
+            return ! $callback($item, $key);
+        });
+    }
+
+    /**
      * Run a filter over each of the items.
      *
-     * @param callable|null $callback
+     * @param  callable|null  $callback
+     *
      * @return static
      */
     public function filter(callable $callback = null)
@@ -87,35 +189,227 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Reject items using the given callback.
+     * Get the values of a given key.
      *
-     * @param callable $callback
      * @return static
      */
-    public function reject(callable $callback)
+    public function values()
     {
-        return $this->filter(function ($item, $key) use ($callback) {
-            return !$callback($item, $key);
-        });
+        return new static(array_values($this->items));
     }
 
     /**
-     * Reduce the collection to a single value.
+     * Get the keys of the collection items.
      *
-     * @param callable $callback
-     * @param mixed $initial
+     * @return static
+     */
+    public function keys()
+    {
+        return new static(array_keys($this->items));
+    }
+
+    /**
+     * Determine if an item exists in the collection by key.
+     *
+     * @param  mixed  $key
+     *
+     * @return bool
+     */
+    public function has($key)
+    {
+        if (is_array($key)) {
+            foreach ($key as $k) {
+                if (! array_key_exists($k, $this->items)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return array_key_exists($key, $this->items);
+    }
+
+    /**
+     * Get an item from the collection by key.
+     *
+     * @param  mixed  $key
+     * @param  mixed  $default
+     *
      * @return mixed
      */
-    public function reduce(callable $callback, $initial = null)
+    public function get($key, $default = null)
     {
-        return array_reduce($this->items, $callback, $initial);
+        if (array_key_exists($key, $this->items)) {
+            return $this->items[$key];
+        }
+
+        return $default instanceof \Closure ? $default() : $default;
+    }
+
+    /**
+     * Get the first item from the collection.
+     *
+     * @param  callable|null  $callback
+     * @param  mixed  $default
+     *
+     * @return mixed
+     */
+    public function first(callable $callback = null, $default = null)
+    {
+        if (is_null($callback)) {
+            if (empty($this->items)) {
+                return $default instanceof \Closure ? $default() : $default;
+            }
+
+            foreach ($this->items as $item) {
+                return $item;
+            }
+        }
+
+        foreach ($this->items as $key => $value) {
+            if ($callback($value, $key)) {
+                return $value;
+            }
+        }
+
+        return $default instanceof \Closure ? $default() : $default;
+    }
+
+    /**
+     * Get the last item from the collection.
+     *
+     * @param  callable|null  $callback
+     * @param  mixed  $default
+     *
+     * @return mixed
+     */
+    public function last(callable $callback = null, $default = null)
+    {
+        if (is_null($callback)) {
+            return empty($this->items) ?
+                ($default instanceof \Closure ? $default() : $default) :
+                end($this->items);
+        }
+
+        return $this->filter($callback)->last(null, $default);
+    }
+
+    /**
+     * Execute a callback over each item.
+     *
+     * @param  callable  $callback
+     *
+     * @return $this
+     */
+    public function each(callable $callback)
+    {
+        foreach ($this->items as $key => $item) {
+            if ($callback($item, $key) === false) {
+                break;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Chunk the collection into chunks of the given size.
+     *
+     * @param  int  $size
+     *
+     * @return static
+     */
+    public function chunk($size)
+    {
+        if ($size <= 0) {
+            return new static();
+        }
+
+        $chunks = [];
+        foreach (array_chunk($this->items, $size, true) as $chunk) {
+            $chunks[] = new static($chunk);
+        }
+
+        return new static($chunks);
+    }
+
+    /**
+     * Alias for the "avg" method.
+     *
+     * @param  callable|string|null  $callback
+     *
+     * @return mixed
+     */
+    public function average($callback = null)
+    {
+        return $this->avg($callback);
+    }
+
+    /**
+     * Get the average value of a given key.
+     *
+     * @param  callable|string|null  $callback
+     *
+     * @return mixed
+     */
+    public function avg($callback = null)
+    {
+        $count = $this->count();
+
+        if ($count === 0) {
+            return null;
+        }
+
+        if ($callback === null) {
+            return $this->sum() / $count;
+        }
+
+        if (is_callable($callback)) {
+            return $this->sum($callback) / $count;
+        }
+
+        return $this->pluck($callback)->avg();
+    }
+
+    /**
+     * Count the number of items in the collection.
+     *
+     * @return int
+     */
+    public function count(): int
+    {
+        return count($this->items);
+    }
+
+    /**
+     * Get the sum of the given values.
+     *
+     * @param  callable|string|null  $callback
+     *
+     * @return mixed
+     */
+    public function sum($callback = null)
+    {
+        if (is_null($callback)) {
+            return array_sum($this->items);
+        }
+
+        if (is_string($callback)) {
+            return $this->pluck($callback)->sum();
+        }
+
+        return $this->reduce(function ($result, $item) use ($callback) {
+            return $result + $callback($item);
+        }, 0);
     }
 
     /**
      * Pluck an array of values from an array.
      *
-     * @param string|array $value
-     * @param string|null $key
+     * @param  string|array  $value
+     * @param  string|null  $key
+     *
      * @return static
      */
     public function pluck($value, $key = null)
@@ -146,205 +440,23 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Get the values of a given key.
+     * Reduce the collection to a single value.
      *
-     * @return static
-     */
-    public function values()
-    {
-        return new static(array_values($this->items));
-    }
-
-    /**
-     * Get the keys of the collection items.
+     * @param  callable  $callback
+     * @param  mixed  $initial
      *
-     * @return static
-     */
-    public function keys()
-    {
-        return new static(array_keys($this->items));
-    }
-
-    /**
-     * Determine if an item exists in the collection by key.
-     *
-     * @param mixed $key
-     * @return bool
-     */
-    public function has($key)
-    {
-        if (is_array($key)) {
-            foreach ($key as $k) {
-                if (!array_key_exists($k, $this->items)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return array_key_exists($key, $this->items);
-    }
-
-    /**
-     * Get an item from the collection by key.
-     *
-     * @param mixed $key
-     * @param mixed $default
      * @return mixed
      */
-    public function get($key, $default = null)
+    public function reduce(callable $callback, $initial = null)
     {
-        if (array_key_exists($key, $this->items)) {
-            return $this->items[$key];
-        }
-
-        return $default instanceof \Closure ? $default() : $default;
-    }
-
-    /**
-     * Get the first item from the collection.
-     *
-     * @param callable|null $callback
-     * @param mixed $default
-     * @return mixed
-     */
-    public function first(callable $callback = null, $default = null)
-    {
-        if (is_null($callback)) {
-            if (empty($this->items)) {
-                return $default instanceof \Closure ? $default() : $default;
-            }
-
-            foreach ($this->items as $item) {
-                return $item;
-            }
-        }
-
-        foreach ($this->items as $key => $value) {
-            if ($callback($value, $key)) {
-                return $value;
-            }
-        }
-
-        return $default instanceof \Closure ? $default() : $default;
-    }
-
-    /**
-     * Get the last item from the collection.
-     *
-     * @param callable|null $callback
-     * @param mixed $default
-     * @return mixed
-     */
-    public function last(callable $callback = null, $default = null)
-    {
-        if (is_null($callback)) {
-            return empty($this->items) ?
-                ($default instanceof \Closure ? $default() : $default) :
-                end($this->items);
-        }
-
-        return $this->filter($callback)->last(null, $default);
-    }
-
-    /**
-     * Execute a callback over each item.
-     *
-     * @param callable $callback
-     * @return $this
-     */
-    public function each(callable $callback)
-    {
-        foreach ($this->items as $key => $item) {
-            if ($callback($item, $key) === false) {
-                break;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Chunk the collection into chunks of the given size.
-     *
-     * @param int $size
-     * @return static
-     */
-    public function chunk($size)
-    {
-        if ($size <= 0) {
-            return new static();
-        }
-
-        $chunks = [];
-        foreach (array_chunk($this->items, $size, true) as $chunk) {
-            $chunks[] = new static($chunk);
-        }
-
-        return new static($chunks);
-    }
-
-    /**
-     * Get the average value of a given key.
-     *
-     * @param callable|string|null $callback
-     * @return mixed
-     */
-    public function avg($callback = null)
-    {
-        $count = $this->count();
-
-        if ($count === 0) {
-            return null;
-        }
-
-        if ($callback === null) {
-            return $this->sum() / $count;
-        }
-
-        if (is_callable($callback)) {
-            return $this->sum($callback) / $count;
-        }
-
-        return $this->pluck($callback)->avg();
-    }
-
-    /**
-     * Alias for the "avg" method.
-     *
-     * @param callable|string|null $callback
-     * @return mixed
-     */
-    public function average($callback = null)
-    {
-        return $this->avg($callback);
-    }
-
-    /**
-     * Get the sum of the given values.
-     *
-     * @param callable|string|null $callback
-     * @return mixed
-     */
-    public function sum($callback = null)
-    {
-        if (is_null($callback)) {
-            return array_sum($this->items);
-        }
-
-        if (is_string($callback)) {
-            return $this->pluck($callback)->sum();
-        }
-
-        return $this->reduce(function ($result, $item) use ($callback) {
-            return $result + $callback($item);
-        }, 0);
+        return array_reduce($this->items, $callback, $initial);
     }
 
     /**
      * Get the max value of a given key.
      *
-     * @param callable|string|null $callback
+     * @param  callable|string|null  $callback
+     *
      * @return mixed
      */
     public function max($callback = null)
@@ -352,7 +464,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
         $callback = $this->valueRetriever($callback);
 
         return $this->filter(function ($value) {
-            return !is_null($value);
+            return ! is_null($value);
         })->reduce(function ($result, $item) use ($callback) {
             $value = $callback($item);
 
@@ -361,9 +473,35 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Get a value retriever callback.
+     *
+     * @param  callable|string|null  $value
+     *
+     * @return callable
+     */
+    protected function valueRetriever($value)
+    {
+        if (is_null($value)) {
+            return function ($item) {
+                return $item;
+            };
+        }
+
+        if (is_string($value)) {
+            return function ($item) use ($value) {
+                return is_array($item) ? ($item[$value] ?? null) :
+                    (is_object($item) ? ($item->$value ?? null) : null);
+            };
+        }
+
+        return $value;
+    }
+
+    /**
      * Get the min value of a given key.
      *
-     * @param callable|string|null $callback
+     * @param  callable|string|null  $callback
+     *
      * @return mixed
      */
     public function min($callback = null)
@@ -371,7 +509,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
         $callback = $this->valueRetriever($callback);
 
         return $this->filter(function ($value) {
-            return !is_null($value);
+            return ! is_null($value);
         })->reduce(function ($result, $item) use ($callback) {
             $value = $callback($item);
 
@@ -380,11 +518,25 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Sort the collection in descending order.
+     *
+     * @param  callable|string|null  $callback
+     * @param  int  $options
+     *
+     * @return static
+     */
+    public function sortDesc($callback = null, $options = SORT_REGULAR)
+    {
+        return $this->sort($callback, $options, true);
+    }
+
+    /**
      * Sort the collection by the given callback.
      *
-     * @param callable|string|null $callback
-     * @param int $options
-     * @param bool $descending
+     * @param  callable|string|null  $callback
+     * @param  int  $options
+     * @param  bool  $descending
+     *
      * @return static
      */
     public function sort($callback = null, $options = SORT_REGULAR, $descending = false)
@@ -413,22 +565,23 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Sort the collection in descending order.
+     * Sort the collection keys in descending order.
      *
-     * @param callable|string|null $callback
-     * @param int $options
+     * @param  int  $options
+     *
      * @return static
      */
-    public function sortDesc($callback = null, $options = SORT_REGULAR)
+    public function sortKeysDesc($options = SORT_REGULAR)
     {
-        return $this->sort($callback, $options, true);
+        return $this->sortKeys($options, true);
     }
 
     /**
      * Sort the collection keys.
      *
-     * @param int $options
-     * @param bool $descending
+     * @param  int  $options
+     * @param  bool  $descending
+     *
      * @return static
      */
     public function sortKeys($options = SORT_REGULAR, $descending = false)
@@ -438,17 +591,6 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
         $descending ? krsort($items, $options) : ksort($items, $options);
 
         return new static($items);
-    }
-
-    /**
-     * Sort the collection keys in descending order.
-     *
-     * @param int $options
-     * @return static
-     */
-    public function sortKeysDesc($options = SORT_REGULAR)
-    {
-        return $this->sortKeys($options, true);
     }
 
     /**
@@ -464,7 +606,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Get one or a specified number of items randomly from the collection.
      *
-     * @param int|null $number
+     * @param  int|null  $number
+     *
      * @return static|mixed
      */
     public function random($number = null)
@@ -484,7 +627,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
 
         $keys = array_rand($this->items, $number);
 
-        if (!is_array($keys)) {
+        if (! is_array($keys)) {
             $keys = [$keys];
         }
 
@@ -510,21 +653,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Slice the underlying collection array.
-     *
-     * @param int $offset
-     * @param int|null $length
-     * @return static
-     */
-    public function slice($offset, $length = null)
-    {
-        return new static(array_slice($this->items, $offset, $length, true));
-    }
-
-    /**
      * Take the first or last {$limit} items.
      *
-     * @param int $limit
+     * @param  int  $limit
+     *
      * @return static
      */
     public function take($limit)
@@ -537,9 +669,23 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Slice the underlying collection array.
+     *
+     * @param  int  $offset
+     * @param  int|null  $length
+     *
+     * @return static
+     */
+    public function slice($offset, $length = null)
+    {
+        return new static(array_slice($this->items, $offset, $length, true));
+    }
+
+    /**
      * Group an array of items by a given key.
      *
-     * @param callable|string $groupBy
+     * @param  callable|string  $groupBy
+     *
      * @return static
      */
     public function groupBy($groupBy)
@@ -550,7 +696,7 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
         foreach ($this->items as $key => $value) {
             $groupKey = $groupBy($value, $key);
 
-            if (!isset($results[$groupKey])) {
+            if (! isset($results[$groupKey])) {
                 $results[$groupKey] = new static();
             }
 
@@ -563,7 +709,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Merge the collection with the given items.
      *
-     * @param mixed $items
+     * @param  mixed  $items
+     *
      * @return static
      */
     public function merge($items)
@@ -574,62 +721,13 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Union the collection with the given items.
      *
-     * @param mixed $items
+     * @param  mixed  $items
+     *
      * @return static
      */
     public function union($items)
     {
         return new static($this->items + $this->getArrayableItems($items));
-    }
-
-    /**
-     * Get the collection of items as a plain array.
-     *
-     * @return array
-     */
-    public function toArray()
-    {
-        return array_map(function ($value) {
-            if ($value instanceof Arrayable) {
-                return $value->toArray();
-            } elseif (is_object($value) && method_exists($value, 'toArray')) {
-                return $value->toArray();
-            }
-
-            return $value;
-        }, $this->items);
-    }
-
-    /**
-     * Get the collection of items as JSON.
-     *
-     * @param int $options
-     * @return string
-     */
-    public function toJson($options = 0)
-    {
-        return json_encode($this->jsonSerialize(), $options);
-    }
-
-    /**
-     * Convert the object into something JSON serializable.
-     *
-     * @return array
-     */
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
-    {
-        return array_map(function ($value) {
-            if ($value instanceof JsonSerializable) {
-                return $value->jsonSerialize();
-            } elseif ($value instanceof Arrayable) {
-                return $value->toArray();
-            } elseif (is_object($value) && method_exists($value, 'toArray')) {
-                return $value->toArray();
-            }
-
-            return $value;
-        }, $this->items);
     }
 
     /**
@@ -643,19 +741,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Count the number of items in the collection.
-     *
-     * @return int
-     */
-    public function count(): int
-    {
-        return count($this->items);
-    }
-
-    /**
      * Determine if an item exists at an offset.
      *
-     * @param mixed $key
+     * @param  mixed  $key
+     *
      * @return bool
      */
     public function offsetExists($key): bool
@@ -666,7 +755,8 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Get an item at a given offset.
      *
-     * @param mixed $key
+     * @param  mixed  $key
+     *
      * @return mixed
      */
     #[\ReturnTypeWillChange]
@@ -676,103 +766,10 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
-     * Set the item at a given offset.
-     *
-     * @param mixed $key
-     * @param mixed $value
-     * @return void
-     */
-    public function offsetSet($key, $value): void
-    {
-        if (is_null($key)) {
-            $this->items[] = $value;
-        } else {
-            $this->items[$key] = $value;
-        }
-    }
-
-    /**
-     * Unset the item at a given offset.
-     *
-     * @param mixed $key
-     * @return void
-     */
-    public function offsetUnset($key): void
-    {
-        unset($this->items[$key]);
-    }
-
-    /**
-     * Get a value retriever callback.
-     *
-     * @param callable|string|null $value
-     * @return callable
-     */
-    protected function valueRetriever($value)
-    {
-        if (is_null($value)) {
-            return function ($item) {
-                return $item;
-            };
-        }
-
-        if (is_string($value)) {
-            return function ($item) use ($value) {
-                return is_array($item) ? ($item[$value] ?? null) :
-                    (is_object($item) ? ($item->$value ?? null) : null);
-            };
-        }
-
-        return $value;
-    }
-
-    /**
-     * Results array of items from Collection or Arrayable.
-     *
-     * @param mixed $items
-     * @return array
-     */
-    protected function getArrayableItems($items)
-    {
-        if (is_array($items)) {
-            return $items;
-        }
-
-        if ($items instanceof self) {
-            return $items->all();
-        }
-
-        if ($items instanceof Arrayable) {
-            return $items->toArray();
-        }
-
-        if ($items instanceof JsonSerializable) {
-            return $items->jsonSerialize();
-        }
-
-        if ($items instanceof Traversable) {
-            return iterator_to_array($items);
-        }
-
-        return (array) $items;
-    }
-
-    /**
-     * Add a method to the collection.
-     *
-     * @param string $name
-     * @param callable $callback
-     * @return void
-     */
-    public static function macro($name, callable $callback)
-    {
-        static::$macros[$name] = $callback;
-    }
-
-    /**
      * Dynamically access collection proxies.
      *
-     * @param string $key
+     * @param  string  $key
+     *
      * @return mixed
      *
      * @throws \Exception
@@ -789,8 +786,9 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     /**
      * Set an item to the collection.
      *
-     * @param mixed $key
-     * @param mixed $value
+     * @param  mixed  $key
+     * @param  mixed  $value
+     *
      * @return void
      */
     public function __set($key, $value)
@@ -799,14 +797,44 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     }
 
     /**
+     * Set the item at a given offset.
+     *
+     * @param  mixed  $key
+     * @param  mixed  $value
+     *
+     * @return void
+     */
+    public function offsetSet($key, $value): void
+    {
+        if (is_null($key)) {
+            $this->items[] = $value;
+        } else {
+            $this->items[$key] = $value;
+        }
+    }
+
+    /**
      * Remove an item from the collection.
      *
-     * @param mixed $key
+     * @param  mixed  $key
+     *
      * @return void
      */
     public function __unset($key)
     {
         $this->offsetUnset($key);
+    }
+
+    /**
+     * Unset the item at a given offset.
+     *
+     * @param  mixed  $key
+     *
+     * @return void
+     */
+    public function offsetUnset($key): void
+    {
+        unset($this->items[$key]);
     }
 
     /**
@@ -817,5 +845,17 @@ class Collection implements ArrayAccess, Countable, IteratorAggregate, JsonSeria
     public function __toString()
     {
         return $this->toJson();
+    }
+
+    /**
+     * Get the collection of items as JSON.
+     *
+     * @param  int  $options
+     *
+     * @return string
+     */
+    public function toJson($options = 0)
+    {
+        return json_encode($this->jsonSerialize(), $options);
     }
 }

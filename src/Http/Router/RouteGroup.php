@@ -19,7 +19,8 @@ class RouteGroup
     /**
      * Create a new route group instance.
      *
-     * @param array $attributes
+     * @param  array  $attributes
+     *
      * @return void
      */
     public function __construct(array $attributes = [])
@@ -30,8 +31,9 @@ class RouteGroup
     /**
      * Get a specific attribute from the group.
      *
-     * @param string $key
-     * @param mixed $default
+     * @param  string  $key
+     * @param  mixed  $default
+     *
      * @return mixed
      */
     public function getAttribute(string $key, $default = null): mixed
@@ -52,7 +54,8 @@ class RouteGroup
     /**
      * Merge the group attributes with the route attributes.
      *
-     * @param array $routeAttributes
+     * @param  array  $routeAttributes
+     *
      * @return array
      */
     public function mergeWithRoute(array $routeAttributes): array
@@ -64,7 +67,7 @@ class RouteGroup
             $prefix = trim($this->attributes['prefix'], '/');
 
             if (isset($routeAttributes['prefix'])) {
-                $routePrefix = trim($routeAttributes['prefix'], '/');
+                $routePrefix      = trim($routeAttributes['prefix'], '/');
                 $merged['prefix'] = $prefix . '/' . $routePrefix;
             } else {
                 $merged['prefix'] = $prefix;
@@ -73,10 +76,10 @@ class RouteGroup
 
         // Handle middleware
         if (isset($this->attributes['middleware'])) {
-            $middleware = (array) $this->attributes['middleware'];
+            $middleware = (array)$this->attributes['middleware'];
 
             if (isset($routeAttributes['middleware'])) {
-                $routeMiddleware = (array) $routeAttributes['middleware'];
+                $routeMiddleware      = (array)$routeAttributes['middleware'];
                 $merged['middleware'] = array_merge($middleware, $routeMiddleware);
             } else {
                 $merged['middleware'] = $middleware;

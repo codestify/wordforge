@@ -10,13 +10,6 @@ namespace WordForge\Support;
 abstract class ServiceProvider
 {
     /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    abstract public function register(): void;
-
-    /**
      * Bootstrap any application services.
      *
      * @return void
@@ -25,10 +18,10 @@ abstract class ServiceProvider
     {
         //
     }
-    
+
     /**
      * Get the WordPress hooks that should trigger this service provider
-     * 
+     *
      * @return array [hook_name => priority]
      */
     public function hooks(): array
@@ -36,24 +29,33 @@ abstract class ServiceProvider
         // Default to running on 'init' hook with priority 10
         return ['init' => 10];
     }
-    
+
     /**
      * Helper to register a service
-     * 
-     * @param string $name
-     * @param callable $factory
+     *
+     * @param  string  $name
+     * @param  callable  $factory
+     *
      * @return void
      */
     protected function registerService($name, callable $factory)
     {
         ServiceManager::register($name, $factory);
     }
-    
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    abstract public function register(): void;
+
     /**
      * Helper to register a singleton
-     * 
-     * @param string $name
-     * @param callable $factory
+     *
+     * @param  string  $name
+     * @param  callable  $factory
+     *
      * @return void
      */
     protected function registerSingleton($name, callable $factory)

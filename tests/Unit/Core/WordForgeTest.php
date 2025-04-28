@@ -7,31 +7,13 @@ use WordForge\WordForge;
 
 class WordForgeTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Reset the WordForge internal state
-        $reflector = new \ReflectionClass(WordForge::class);
-
-        // Reset bootstrapped flag
-        $bootstrappedProperty = $reflector->getProperty('bootstrapped');
-        $bootstrappedProperty->setAccessible(true);
-        $bootstrappedProperty->setValue(null, false);
-
-        // Reset config
-        $configProperty = $reflector->getProperty('config');
-        $configProperty->setAccessible(true);
-        $configProperty->setValue(null, []);
-    }
-
     /**
      * Test the bootstrap method initializes the framework correctly.
      */
     public function testBootstrap()
     {
         // Arrange
-        $basePath = __DIR__ . '/../../';
+        $basePath = __DIR__.'/../../';
 
         // Mock WordPress hooks
         $this->mockWpFunction('add_action', true);
@@ -44,20 +26,32 @@ class WordForgeTest extends TestCase
     }
 
     /**
+     * Helper method to get private property value.
+     */
+    protected function getPrivateProperty($class, $propertyName)
+    {
+        $reflector = new \ReflectionClass($class);
+        $property  = $reflector->getProperty($propertyName);
+        $property->setAccessible(true);
+
+        return $property->getValue();
+    }
+
+    /**
      * Test the config method retrieves configuration correctly.
      */
     public function testConfig()
     {
         // Arrange
-        $basePath = __DIR__ . '/../../';
+        $basePath = __DIR__.'/../../';
         $this->mockWpFunction('add_action', true);
 
         // Set up fake config data using reflection
         WordForge::bootstrap($basePath);
         $configData = [
-            'app' => [
-                'name' => 'WordForge',
-                'debug' => true,
+            'app'      => [
+                'name'      => 'WordForge',
+                'debug'     => true,
                 'providers' => [
                     'TestServiceProvider'
                 ]
@@ -80,18 +74,31 @@ class WordForgeTest extends TestCase
     }
 
     /**
+     * Helper method to set private property value.
+     */
+    protected function setPrivateProperty($class, $propertyName, $value)
+    {
+        $reflector = new \ReflectionClass($class);
+        $property  = $reflector->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($value);
+
+        return $property->getValue();
+    }
+
+    /**
      * Test the basePath method returns the correct path.
      */
     public function testBasePath()
     {
         // Arrange
-        $basePath = __DIR__ . '/../../';
+        $basePath = __DIR__.'/../../';
         $this->mockWpFunction('add_action', true);
         WordForge::bootstrap($basePath);
 
         // Act & Assert
         $this->assertEquals($basePath, WordForge::basePath());
-        $this->assertEquals($basePath . '/config', WordForge::basePath('config'));
+        $this->assertEquals($basePath.'/config', WordForge::basePath('config'));
     }
 
     /**
@@ -100,13 +107,13 @@ class WordForgeTest extends TestCase
     public function testAppPath()
     {
         // Arrange
-        $basePath = __DIR__ . '/../../';
+        $basePath = __DIR__.'/../../';
         $this->mockWpFunction('add_action', true);
         WordForge::bootstrap($basePath);
 
         // Act & Assert
         $this->assertEquals($basePath, WordForge::appPath());
-        $this->assertEquals($basePath . '/config', WordForge::appPath('config'));
+        $this->assertEquals($basePath.'/config', WordForge::appPath('config'));
     }
 
     /**
@@ -115,7 +122,7 @@ class WordForgeTest extends TestCase
     public function testUrl()
     {
         // Arrange
-        $basePath = __DIR__ . '/../../';
+        $basePath = __DIR__.'/../../';
         $this->mockWpFunction('add_action', true);
         $this->mockWpFunction('rest_url', 'https://example.com/wp-json/wordforge/v1');
 
@@ -145,28 +152,21 @@ class WordForgeTest extends TestCase
         $this->assertEquals('1.0.0', $version);
     }
 
-    /**
-     * Helper method to get private property value.
-     */
-    protected function getPrivateProperty($class, $propertyName)
+    protected function setUp(): void
     {
-        $reflector = new \ReflectionClass($class);
-        $property = $reflector->getProperty($propertyName);
-        $property->setAccessible(true);
+        parent::setUp();
 
-        return $property->getValue();
-    }
+        // Reset the WordForge internal state
+        $reflector = new \ReflectionClass(WordForge::class);
 
-    /**
-     * Helper method to set private property value.
-     */
-    protected function setPrivateProperty($class, $propertyName, $value)
-    {
-        $reflector = new \ReflectionClass($class);
-        $property = $reflector->getProperty($propertyName);
-        $property->setAccessible(true);
-        $property->setValue($value);
+        // Reset bootstrapped flag
+        $bootstrappedProperty = $reflector->getProperty('bootstrapped');
+        $bootstrappedProperty->setAccessible(true);
+        $bootstrappedProperty->setValue(null, false);
 
-        return $property->getValue();
+        // Reset config
+        $configProperty = $reflector->getProperty('config');
+        $configProperty->setAccessible(true);
+        $configProperty->setValue(null, []);
     }
 }

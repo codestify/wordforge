@@ -58,7 +58,8 @@ class Collection extends Facade
     /**
      * Create a facade instance.
      *
-     * @param string $accessor
+     * @param  string  $accessor
+     *
      * @return object
      */
     protected static function createFacadeInstance(string $accessor)

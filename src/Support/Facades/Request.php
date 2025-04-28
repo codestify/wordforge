@@ -44,14 +44,15 @@ class Request extends Facade
     /**
      * Create a facade instance.
      *
-     * @param string $accessor
+     * @param  string  $accessor
+     *
      * @return object
      */
     protected static function createFacadeInstance(string $accessor)
     {
         global $wp_rest_server;
 
-        if (!$wp_rest_server) {
+        if (! $wp_rest_server) {
             $wp_rest_server = new \WP_REST_Server();
         }
 

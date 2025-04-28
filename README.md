@@ -127,8 +127,80 @@ Route::group(['middleware' => 'auth'], function() {
     Route::put('posts/{id}', [PostController::class, 'update']);
     Route::delete('posts/{id}', [PostController::class, 'destroy']);
 });
-
 ```
+
+#### Important: Using Route Facade vs. Router Class
+
+Always use the `Route` facade rather than the `Router` class directly in your route definitions:
+
+```php
+// CORRECT: Use the Route facade
+Route::get('test', function() { return ['message' => 'It works!']; });
+
+// INCORRECT: Don't use Router class directly
+// Router::get('test', function() { return ['message' => 'It works!']; });
+```
+
+#### Troubleshooting Routes
+
+If your routes aren't working after registering your plugin and service provider:
+
+1. **Check Namespace Configuration**: Make sure your API namespace is properly set in your config:
+   ```php
+   // config/app.php
+   return [
+       'api' => [
+           'namespace' => 'your-plugin/v1',
+       ],
+       // ...
+   ];
+   ```
+
+2. **Route Service Provider**: Ensure your RouteServiceProvider is properly registered and sets the namespace before routes are loaded:
+   ```php
+   class RouteServiceProvider extends ServiceProvider
+   {
+       public function register(): void
+       {
+           // Set namespace here
+           Router::setNamespace($apiPrefix);
+       }
+       
+       public function boot(): void
+       {
+           // Load routes here
+           require_once $routesPath;
+           Router::registerRoutes();
+       }
+       
+       public function hooks(): array
+       {
+           // Register at priority 5 (before WordForge's own hook)
+           return ['rest_api_init' => 5];
+       }
+   }
+   ```
+
+3. **Bootstrap Timing**: Bootstrap WordForge early in your plugin:
+   ```php
+   // main-plugin-file.php
+   require_once 'vendor/autoload.php';
+   
+   // Bootstrap immediately after autoloading
+   WordForge::bootstrap(__DIR__);
+   ```
+
+4. **Debug Mode**: To diagnose route issues, enable WordPress debug mode:
+   ```php
+   // wp-config.php
+   define('WP_DEBUG', true);
+   define('WP_DEBUG_LOG', true);
+   ```
+
+5. **Access Routes**: Routes are available at:
+   ```
+   https://your-site.com/wp-json/{namespace}/{route-path}
+   ```
 
 ### Creating Controllers
 

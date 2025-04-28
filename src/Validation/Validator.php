@@ -49,18 +49,29 @@ class Validator
     /**
      * Create a new Validator instance.
      *
-     * @param array $data
-     * @param array $rules
-     * @param array $messages
-     * @param array $attributes
+     * @param  array  $data
+     * @param  array  $rules
+     * @param  array  $messages
+     * @param  array  $attributes
+     *
      * @return void
      */
     public function __construct(array $data, array $rules, array $messages = [], array $attributes = [])
     {
-        $this->data = $data;
-        $this->rules = $rules;
-        $this->messages = $messages;
+        $this->data       = $data;
+        $this->rules      = $rules;
+        $this->messages   = $messages;
         $this->attributes = $attributes;
+    }
+
+    /**
+     * Run the validator and return whether validation failed.
+     *
+     * @return bool
+     */
+    public function fails()
+    {
+        return ! $this->passes();
     }
 
     /**
@@ -82,37 +93,27 @@ class Validator
     }
 
     /**
-     * Run the validator and return whether validation failed.
+     * Parse the rule string into an array of rules.
      *
-     * @return bool
+     * @param  string|array  $rules
+     *
+     * @return array
      */
-    public function fails()
+    protected function parseRules($rules)
     {
-        return !$this->passes();
-    }
+        if (is_array($rules)) {
+            return array_map([$this, 'parseRule'], $rules);
+        }
 
-    public function diagnose($attribute, $rule)
-    {
-        $value = $this->getValue($attribute);
-        [$ruleName, $parameters] = $this->parseRule($rule);
-
-        // Use the same method name transformation as validateAttribute
-        $methodName = 'validate' . str_replace(' ', '', ucwords(str_replace('_', ' ', $ruleName)));
-
-        return [
-            'attribute' => $attribute,
-            'value' => $value,
-            'rule' => $ruleName,
-            'parameters' => $parameters,
-            'would_pass' => method_exists($this, $methodName) ? $this->$methodName($attribute, $value, $parameters) : false
-        ];
+        return array_map([$this, 'parseRule'], explode('|', $rules));
     }
 
     /**
      * Validate a given attribute against a rule.
      *
-     * @param string $attribute
-     * @param array $rule
+     * @param  string  $attribute
+     * @param  array  $rule
+     *
      * @return void
      */
     protected function validateAttribute(string $attribute, array $rule)
@@ -120,14 +121,14 @@ class Validator
         $value = $this->getValue($attribute);
         list($rule, $parameters) = $rule;
 
-        if ($rule !== 'required' && $this->isEmptyValue($value) && !$this->isImplicitRule($rule)) {
+        if ($rule !== 'required' && $this->isEmptyValue($value) && ! $this->isImplicitRule($rule)) {
             return;
         }
 
         $methodName = 'validate' . str_replace(' ', '', ucwords(str_replace('_', ' ', $rule)));
 
         if (method_exists($this, $methodName)) {
-            if (!$this->$methodName($attribute, $value, $parameters)) {
+            if (! $this->$methodName($attribute, $value, $parameters)) {
                 $this->addError($attribute, $rule, $parameters);
             }
         }
@@ -136,7 +137,8 @@ class Validator
     /**
      * Get a value from the data array.
      *
-     * @param string $attribute
+     * @param  string  $attribute
+     *
      * @return mixed
      */
     protected function getValue(string $attribute)
@@ -147,7 +149,8 @@ class Validator
     /**
      * Determine if a value is empty.
      *
-     * @param mixed $value
+     * @param  mixed  $value
+     *
      * @return bool
      */
     protected function isEmptyValue($value)
@@ -158,7 +161,8 @@ class Validator
     /**
      * Determine if a rule implies the attribute is required.
      *
-     * @param string $rule
+     * @param  string  $rule
+     *
      * @return bool
      */
     protected function isImplicitRule(string $rule)
@@ -169,9 +173,10 @@ class Validator
     /**
      * Add an error message for an attribute.
      *
-     * @param string $attribute
-     * @param string $rule
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  string  $rule
+     * @param  array  $parameters
+     *
      * @return void
      */
     protected function addError(string $attribute, string $rule, array $parameters = [])
@@ -185,8 +190,9 @@ class Validator
     /**
      * Get the validation message for an attribute and rule.
      *
-     * @param string $attribute
-     * @param string $rule
+     * @param  string  $attribute
+     * @param  string  $rule
+     *
      * @return string
      */
     protected function getMessage(string $attribute, string $rule)
@@ -208,26 +214,27 @@ class Validator
     /**
      * Get the default validation message for a rule.
      *
-     * @param string $rule
+     * @param  string  $rule
+     *
      * @return string
      */
     protected function getDefaultMessage(string $rule)
     {
         $messages = [
             'required' => 'The :attribute field is required.',
-            'email' => 'The :attribute must be a valid email address.',
-            'url' => 'The :attribute must be a valid URL.',
-            'min' => 'The :attribute must be at least :min characters.',
-            'max' => 'The :attribute may not be greater than :max characters.',
-            'numeric' => 'The :attribute must be a number.',
-            'integer' => 'The :attribute must be an integer.',
-            'boolean' => 'The :attribute must be true or false.',
-            'array' => 'The :attribute must be an array.',
-            'in' => 'The selected :attribute is invalid.',
-            'not_in' => 'The selected :attribute is invalid.',
-            'date' => 'The :attribute is not a valid date.',
-            'between' => 'The :attribute must be between :min and :max.',
-            'regex' => 'The :attribute format is invalid.',
+            'email'    => 'The :attribute must be a valid email address.',
+            'url'      => 'The :attribute must be a valid URL.',
+            'min'      => 'The :attribute must be at least :min characters.',
+            'max'      => 'The :attribute may not be greater than :max characters.',
+            'numeric'  => 'The :attribute must be a number.',
+            'integer'  => 'The :attribute must be an integer.',
+            'boolean'  => 'The :attribute must be true or false.',
+            'array'    => 'The :attribute must be an array.',
+            'in'       => 'The selected :attribute is invalid.',
+            'not_in'   => 'The selected :attribute is invalid.',
+            'date'     => 'The :attribute is not a valid date.',
+            'between'  => 'The :attribute must be between :min and :max.',
+            'regex'    => 'The :attribute format is invalid.',
         ];
 
         return $messages[$rule] ?? "The :attribute is invalid.";
@@ -236,17 +243,18 @@ class Validator
     /**
      * Replace parameters in the message.
      *
-     * @param string $message
-     * @param string $attribute
-     * @param string $rule
-     * @param array $parameters
+     * @param  string  $message
+     * @param  string  $attribute
+     * @param  string  $rule
+     * @param  array  $parameters
+     *
      * @return string
      */
     protected function replaceParameters(string $message, string $attribute, string $rule, array $parameters)
     {
         // Replace :attribute with the attribute name
         $attributeName = $this->attributes[$attribute] ?? str_replace('_', ' ', $attribute);
-        $message = str_replace(':attribute', $attributeName, $message);
+        $message       = str_replace(':attribute', $attributeName, $message);
 
         // Replace other parameters
         switch ($rule) {
@@ -266,25 +274,32 @@ class Validator
         return $message;
     }
 
-    /**
-     * Parse the rule string into an array of rules.
-     *
-     * @param string|array $rules
-     * @return array
-     */
-    protected function parseRules($rules)
+    public function diagnose($attribute, $rule)
     {
-        if (is_array($rules)) {
-            return array_map([$this, 'parseRule'], $rules);
-        }
+        $value = $this->getValue($attribute);
+        [$ruleName, $parameters] = $this->parseRule($rule);
 
-        return array_map([$this, 'parseRule'], explode('|', $rules));
+        // Use the same method name transformation as validateAttribute
+        $methodName = 'validate' . str_replace(' ', '', ucwords(str_replace('_', ' ', $ruleName)));
+
+        return [
+            'attribute'  => $attribute,
+            'value'      => $value,
+            'rule'       => $ruleName,
+            'parameters' => $parameters,
+            'would_pass' => method_exists($this, $methodName) ? $this->$methodName(
+                $attribute,
+                $value,
+                $parameters
+            ) : false
+        ];
     }
 
     /**
      * Parse a rule string into a rule and parameters.
      *
-     * @param string $rule
+     * @param  string  $rule
+     *
      * @return array
      */
     protected function parseRule(string $rule)
@@ -312,22 +327,24 @@ class Validator
     /**
      * Validate that an attribute is required.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateRequired(string $attribute, $value, array $parameters)
     {
-        return !$this->isEmptyValue($value);
+        return ! $this->isEmptyValue($value);
     }
 
     /**
      * Validate that an attribute is a valid email.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateEmail(string $attribute, $value, array $parameters)
@@ -338,9 +355,10 @@ class Validator
     /**
      * Validate that an attribute is a valid URL.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateUrl(string $attribute, $value, array $parameters)
@@ -351,14 +369,15 @@ class Validator
     /**
      * Validate that an attribute has a minimum value.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateMin(string $attribute, $value, array $parameters)
     {
-        $min = (int) $parameters[0];
+        $min = (int)$parameters[0];
 
         if (is_numeric($value)) {
             return $value >= $min;
@@ -378,14 +397,15 @@ class Validator
     /**
      * Validate that an attribute has a maximum value.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateMax(string $attribute, $value, array $parameters)
     {
-        $max = (int) $parameters[0];
+        $max = (int)$parameters[0];
 
         if (is_numeric($value)) {
             return $value <= $max;
@@ -405,9 +425,10 @@ class Validator
     /**
      * Validate that an attribute is numeric.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateNumeric(string $attribute, $value, array $parameters)
@@ -418,9 +439,10 @@ class Validator
     /**
      * Validate that an attribute is an integer.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateInteger(string $attribute, $value, array $parameters)
@@ -431,9 +453,10 @@ class Validator
     /**
      * Validate that an attribute is a boolean.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateBoolean(string $attribute, $value, array $parameters)
@@ -446,9 +469,10 @@ class Validator
     /**
      * Validate that an attribute is an array.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateArray(string $attribute, $value, array $parameters)
@@ -459,9 +483,10 @@ class Validator
     /**
      * Validate that an attribute is in a list of values.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateIn(string $attribute, $value, array $parameters)
@@ -472,22 +497,24 @@ class Validator
     /**
      * Validate that an attribute is not in a list of values.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateNotIn(string $attribute, $value, array $parameters)
     {
-        return !in_array($value, $parameters);
+        return ! in_array($value, $parameters);
     }
 
     /**
      * Validate that an attribute is a valid date.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateDate(string $attribute, $value, array $parameters)
@@ -496,7 +523,7 @@ class Validator
             return true;
         }
 
-        if (!is_string($value) && !is_numeric($value)) {
+        if (! is_string($value) && ! is_numeric($value)) {
             return false;
         }
 
@@ -508,9 +535,10 @@ class Validator
     /**
      * Validate that an attribute is between a minimum and maximum.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateBetween(string $attribute, $value, array $parameters)
@@ -523,11 +551,13 @@ class Validator
 
         if (is_string($value)) {
             $length = mb_strlen($value);
+
             return $length >= $min && $length <= $max;
         }
 
         if (is_array($value)) {
             $count = count($value);
+
             return $count >= $min && $count <= $max;
         }
 
@@ -537,14 +567,15 @@ class Validator
     /**
      * Validate that an attribute matches a regular expression.
      *
-     * @param string $attribute
-     * @param mixed $value
-     * @param array $parameters
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     *
      * @return bool
      */
     protected function validateRegex(string $attribute, $value, array $parameters)
     {
-        if (!is_string($value) && !is_numeric($value)) {
+        if (! is_string($value) && ! is_numeric($value)) {
             return false;
         }
 

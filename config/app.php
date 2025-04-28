@@ -7,22 +7,22 @@ return [
     /**
      * Application name
      */
-    'name' => 'WordForge App',
-    
+    'name'        => 'WordForge App',
+
     /**
      * API prefix for REST routes
      */
-    'api_prefix' => 'wordforge/v1',
-    
+    'api_prefix'  => 'wordforge/v1',
+
     /**
      * Default routes file path (relative to app path)
      */
     'routes_file' => 'routes/api.php',
-    
+
     /**
      * Service providers to register
      */
-    'providers' => [
+    'providers'   => [
         // Register your service providers here
     ],
 ];

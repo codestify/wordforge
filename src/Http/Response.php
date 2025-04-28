@@ -35,9 +35,10 @@ class Response
     /**
      * Create a new Response instance.
      *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return void
      */
     public function __construct($data = null, int $status = 200, array $headers = [])
@@ -48,11 +49,33 @@ class Response
     }
 
     /**
+     * Create a new validation error response.
+     *
+     * @param  array  $errors
+     * @param  string  $message
+     * @param  array  $headers
+     *
+     * @return static
+     */
+    public static function validationError(
+        array $errors,
+        string $message = 'The given data was invalid',
+        array $headers = []
+    ) {
+        return static::json([
+            'success' => false,
+            'message' => $message,
+            'errors'  => $errors
+        ], 422, $headers);
+    }
+
+    /**
      * Create a new JSON response.
      *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function json($data = null, int $status = 200, array $headers = [])
@@ -63,59 +86,11 @@ class Response
     }
 
     /**
-     * Create a new successful response.
-     *
-     * @param mixed $data
-     * @param int $status
-     * @param array $headers
-     * @return static
-     */
-    public static function success($data = null, int $status = 200, array $headers = [])
-    {
-        return static::json([
-            'success' => true,
-            'data' => $data
-        ], $status, $headers);
-    }
-
-    /**
-     * Create a new error response.
-     *
-     * @param string $message
-     * @param int $status
-     * @param array $headers
-     * @return static
-     */
-    public static function error(string $message, int $status = 400, array $headers = [])
-    {
-        return static::json([
-            'success' => false,
-            'error' => $message
-        ], $status, $headers);
-    }
-
-    /**
-     * Create a new validation error response.
-     *
-     * @param array $errors
-     * @param string $message
-     * @param array $headers
-     * @return static
-     */
-    public static function validationError(array $errors, string $message = 'The given data was invalid', array $headers = [])
-    {
-        return static::json([
-            'success' => false,
-            'message' => $message,
-            'errors' => $errors
-        ], 422, $headers);
-    }
-
-    /**
      * Create a new "not found" response.
      *
-     * @param string $message
-     * @param array $headers
+     * @param  string  $message
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function notFound(string $message = 'Resource not found', array $headers = [])
@@ -124,10 +99,28 @@ class Response
     }
 
     /**
+     * Create a new error response.
+     *
+     * @param  string  $message
+     * @param  int  $status
+     * @param  array  $headers
+     *
+     * @return static
+     */
+    public static function error(string $message, int $status = 400, array $headers = [])
+    {
+        return static::json([
+            'success' => false,
+            'error'   => $message
+        ], $status, $headers);
+    }
+
+    /**
      * Create a new "unauthorized" response.
      *
-     * @param string $message
-     * @param array $headers
+     * @param  string  $message
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function unauthorized(string $message = 'Unauthorized', array $headers = [])
@@ -138,8 +131,9 @@ class Response
     /**
      * Create a new "forbidden" response.
      *
-     * @param string $message
-     * @param array $headers
+     * @param  string  $message
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function forbidden(string $message = 'Forbidden', array $headers = [])
@@ -150,7 +144,8 @@ class Response
     /**
      * Create a new "no content" response.
      *
-     * @param array $headers
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function noContent(array $headers = [])
@@ -161,8 +156,9 @@ class Response
     /**
      * Create a new "created" response.
      *
-     * @param mixed $data
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function created($data = null, array $headers = [])
@@ -171,10 +167,28 @@ class Response
     }
 
     /**
+     * Create a new successful response.
+     *
+     * @param  mixed  $data
+     * @param  int  $status
+     * @param  array  $headers
+     *
+     * @return static
+     */
+    public static function success($data = null, int $status = 200, array $headers = [])
+    {
+        return static::json([
+            'success' => true,
+            'data'    => $data
+        ], $status, $headers);
+    }
+
+    /**
      * Create a new "accepted" response.
      *
-     * @param mixed $data
-     * @param array $headers
+     * @param  mixed  $data
+     * @param  array  $headers
+     *
      * @return static
      */
     public static function accepted($data = null, array $headers = [])
@@ -183,23 +197,10 @@ class Response
     }
 
     /**
-     * Add a header to the response.
-     *
-     * @param string $name
-     * @param string $value
-     * @return $this
-     */
-    public function header(string $name, string $value)
-    {
-        $this->headers[$name] = $value;
-
-        return $this;
-    }
-
-    /**
      * Add multiple headers to the response.
      *
-     * @param array $headers
+     * @param  array  $headers
+     *
      * @return $this
      */
     public function withHeaders(array $headers)
@@ -212,14 +213,16 @@ class Response
     }
 
     /**
-     * Set the response status code.
+     * Add a header to the response.
      *
-     * @param int $statusCode
+     * @param  string  $name
+     * @param  string  $value
+     *
      * @return $this
      */
-    public function setStatusCode(int $statusCode)
+    public function header(string $name, string $value)
     {
-        $this->statusCode = $statusCode;
+        $this->headers[$name] = $value;
 
         return $this;
     }
@@ -235,6 +238,20 @@ class Response
     }
 
     /**
+     * Set the response status code.
+     *
+     * @param  int  $statusCode
+     *
+     * @return $this
+     */
+    public function setStatusCode(int $statusCode)
+    {
+        $this->statusCode = $statusCode;
+
+        return $this;
+    }
+
+    /**
      * Get the response data.
      *
      * @return mixed
@@ -247,7 +264,8 @@ class Response
     /**
      * Set the response data.
      *
-     * @param mixed $data
+     * @param  mixed  $data
+     *
      * @return $this
      */
     public function setData($data)

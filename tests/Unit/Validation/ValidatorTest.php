@@ -13,9 +13,9 @@ class ValidatorTest extends TestCase
     public function testConstructor()
     {
         // Arrange
-        $data = ['name' => 'Test User', 'email' => 'test@example.com'];
-        $rules = ['name' => 'required', 'email' => 'required|email'];
-        $messages = ['email.required' => 'Email is required'];
+        $data       = ['name' => 'Test User', 'email' => 'test@example.com'];
+        $rules      = ['name' => 'required', 'email' => 'required|email'];
+        $messages   = ['email.required' => 'Email is required'];
         $attributes = ['name' => 'Full Name'];
 
         // Act
@@ -48,7 +48,7 @@ class ValidatorTest extends TestCase
     public function testValidationPasses()
     {
         // Arrange
-        $data = ['name' => 'Test User', 'email' => 'test@example.com'];
+        $data  = ['name' => 'Test User', 'email' => 'test@example.com'];
         $rules = ['name' => 'required', 'email' => 'required|email'];
 
         $validator = new Validator($data, $rules);
@@ -67,7 +67,7 @@ class ValidatorTest extends TestCase
     public function testValidationFailsWithMissingRequiredField()
     {
         // Arrange
-        $data = ['name' => 'Test User']; // Missing email
+        $data  = ['name' => 'Test User']; // Missing email
         $rules = ['name' => 'required', 'email' => 'required'];
 
         $validator = new Validator($data, $rules);
@@ -86,7 +86,7 @@ class ValidatorTest extends TestCase
     public function testValidationFailsWithInvalidEmail()
     {
         // Arrange
-        $data = ['name' => 'Test User', 'email' => 'invalid-email'];
+        $data  = ['name' => 'Test User', 'email' => 'invalid-email'];
         $rules = ['name' => 'required', 'email' => 'required|email'];
 
         $validator = new Validator($data, $rules);
@@ -105,7 +105,7 @@ class ValidatorTest extends TestCase
     public function testFailsMethod()
     {
         // Arrange
-        $data = ['name' => 'Test User'];
+        $data  = ['name' => 'Test User'];
         $rules = ['name' => 'required', 'email' => 'required'];
 
         $validator = new Validator($data, $rules);
@@ -114,7 +114,7 @@ class ValidatorTest extends TestCase
         $this->assertTrue($validator->fails());
 
         // With passing validation
-        $data = ['name' => 'Test User', 'email' => 'test@example.com'];
+        $data      = ['name' => 'Test User', 'email' => 'test@example.com'];
         $validator = new Validator($data, $rules);
 
         $this->assertFalse($validator->fails());
@@ -126,8 +126,8 @@ class ValidatorTest extends TestCase
     public function testCustomErrorMessages()
     {
         // Arrange
-        $data = ['name' => ''];
-        $rules = ['name' => 'required'];
+        $data     = ['name' => ''];
+        $rules    = ['name' => 'required'];
         $messages = ['name.required' => 'Please enter your name'];
 
         $validator = new Validator($data, $rules, $messages);
@@ -146,8 +146,8 @@ class ValidatorTest extends TestCase
     public function testCustomAttributeNames()
     {
         // Arrange
-        $data = ['first_name' => ''];
-        $rules = ['first_name' => 'required'];
+        $data       = ['first_name' => ''];
+        $rules      = ['first_name' => 'required'];
         $attributes = ['first_name' => 'First Name'];
 
         $validator = new Validator($data, $rules, [], $attributes);
@@ -517,16 +517,16 @@ class ValidatorTest extends TestCase
     {
         // Arrange
         $data = [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'age' => 25,
+            'name'    => 'Test User',
+            'email'   => 'test@example.com',
+            'age'     => 25,
             'website' => 'https://example.com'
         ];
 
         $rules = [
-            'name' => 'required|min:3|max:50',
-            'email' => 'required|email',
-            'age' => 'required|integer|between:18,100',
+            'name'    => 'required|min:3|max:50',
+            'email'   => 'required|email',
+            'age'     => 'required|integer|between:18,100',
             'website' => 'required|url'
         ];
 
@@ -540,14 +540,14 @@ class ValidatorTest extends TestCase
 
         // Test with invalid data
         $data = [
-            'name' => 'AB', // Too short
-            'email' => 'invalid-email',
-            'age' => 15, // Too young
+            'name'    => 'AB', // Too short
+            'email'   => 'invalid-email',
+            'age'     => 15, // Too young
             'website' => 'not-a-url'
         ];
 
         $validator = new Validator($data, $rules);
-        $result = $validator->passes();
+        $result    = $validator->passes();
 
         $this->assertFalse($result);
         $this->assertCount(4, $validator->errors());
@@ -560,16 +560,16 @@ class ValidatorTest extends TestCase
     {
         // Arrange
         $data = [
-            'name' => 'Test User',
-            'email' => '', // Empty but not required
-            'age' => null, // Null but not required
+            'name'    => 'Test User',
+            'email'   => '', // Empty but not required
+            'age'     => null, // Null but not required
             'website' => '' // Empty but not required
         ];
 
         $rules = [
-            'name' => 'required|min:3',
-            'email' => 'email',
-            'age' => 'integer|between:18,100',
+            'name'    => 'required|min:3',
+            'email'   => 'email',
+            'age'     => 'integer|between:18,100',
             'website' => 'url'
         ];
 
@@ -589,7 +589,7 @@ class ValidatorTest extends TestCase
     {
         // Use reflection to access the protected method
         $reflector = new \ReflectionClass(Validator::class);
-        $method = $reflector->getMethod('parseRules');
+        $method    = $reflector->getMethod('parseRules');
         $method->setAccessible(true);
 
         $validator = new Validator([], []);
@@ -626,7 +626,7 @@ class ValidatorTest extends TestCase
     {
         // Use reflection to access the protected method
         $reflector = new \ReflectionClass(Validator::class);
-        $method = $reflector->getMethod('parseRule');
+        $method    = $reflector->getMethod('parseRule');
         $method->setAccessible(true);
 
         $validator = new Validator([], []);

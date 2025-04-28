@@ -40,23 +40,13 @@ class Router
     protected static $patterns = [];
 
     /**
-     * Initialize the router.
-     *
-     * @return void
-     */
-    public static function init()
-    {
-        self::$routes = new RouteCollection();
-    }
-
-    /**
      * Register all routes with WordPress REST API.
      *
      * @return void
      */
     public static function registerRoutes()
     {
-        if (!self::$routes) {
+        if (! self::$routes) {
             return;
         }
 
@@ -66,21 +56,20 @@ class Router
     }
 
     /**
-     * Set a global pattern for a given parameter.
+     * Get all registered routes.
      *
-     * @param string $key
-     * @param string $pattern
-     * @return void
+     * @return array
      */
-    public static function pattern(string $key, string $pattern)
+    public static function getRoutes()
     {
-        self::$patterns[$key] = $pattern;
+        return self::$routes ? self::$routes->getRoutes() : [];
     }
 
     /**
      * Set global patterns for parameters.
      *
-     * @param array $patterns
+     * @param  array  $patterns
+     *
      * @return void
      */
     public static function patterns(array $patterns)
@@ -91,10 +80,24 @@ class Router
     }
 
     /**
+     * Set a global pattern for a given parameter.
+     *
+     * @param  string  $key
+     * @param  string  $pattern
+     *
+     * @return void
+     */
+    public static function pattern(string $key, string $pattern)
+    {
+        self::$patterns[$key] = $pattern;
+    }
+
+    /**
      * Create a route group with shared attributes.
      *
-     * @param array $attributes
-     * @param callable $callback
+     * @param  array  $attributes
+     * @param  callable  $callback
+     *
      * @return void
      */
     public static function group(array $attributes, callable $callback)
@@ -111,31 +114,24 @@ class Router
     /**
      * Update the group stack with the given attributes.
      *
-     * @param array $attributes
+     * @param  array  $attributes
+     *
      * @return void
      */
     protected static function updateGroupStack(array $attributes)
     {
-        if (!empty(self::$groupStack)) {
+        if (! empty(self::$groupStack)) {
             $attributes = self::mergeWithLastGroup($attributes);
         }
 
         self::$groupStack[] = $attributes;
     }
 
-    public static function addNamedRoute($name, $route)
-    {
-        if (null === self::$routes) {
-            self::init();
-        }
-
-        self::$routes->addNamed($name, $route);
-    }
-
     /**
      * Merge the given attributes with the last group stack.
      *
-     * @param array $attributes
+     * @param  array  $attributes
+     *
      * @return array
      */
     protected static function mergeWithLastGroup(array $attributes)
@@ -150,8 +146,8 @@ class Router
         // Handle middleware merging
         if (isset($lastGroup['middleware']) && isset($attributes['middleware'])) {
             $attributes['middleware'] = array_merge(
-                (array) $lastGroup['middleware'],
-                (array) $attributes['middleware']
+                (array)$lastGroup['middleware'],
+                (array)$attributes['middleware']
             );
         }
 
@@ -169,8 +165,8 @@ class Router
         // Handle where conditions merging
         if (isset($lastGroup['where']) && isset($attributes['where'])) {
             $attributes['where'] = array_merge(
-                (array) $lastGroup['where'],
-                (array) $attributes['where']
+                (array)$lastGroup['where'],
+                (array)$attributes['where']
             );
         }
 
@@ -178,11 +174,31 @@ class Router
         return array_merge($lastGroup, $attributes);
     }
 
+    public static function addNamedRoute($name, $route)
+    {
+        if (null === self::$routes) {
+            self::init();
+        }
+
+        self::$routes->addNamed($name, $route);
+    }
+
+    /**
+     * Initialize the router.
+     *
+     * @return void
+     */
+    public static function init()
+    {
+        self::$routes = new RouteCollection();
+    }
+
     /**
      * Add a GET route.
      *
-     * @param string $uri
-     * @param mixed $action
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
      * @return Route
      */
     public static function get(string $uri, $action)
@@ -191,179 +207,12 @@ class Router
     }
 
     /**
-     * Add a POST route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function post(string $uri, $action)
-    {
-        return self::addRoute(['POST'], $uri, $action);
-    }
-
-    /**
-     * Add a PUT route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function put(string $uri, $action)
-    {
-        return self::addRoute(['PUT'], $uri, $action);
-    }
-
-    /**
-     * Add a PATCH route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function patch(string $uri, $action)
-    {
-        return self::addRoute(['PATCH'], $uri, $action);
-    }
-
-    /**
-     * Add a DELETE route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function delete(string $uri, $action)
-    {
-        return self::addRoute(['DELETE'], $uri, $action);
-    }
-
-    /**
-     * Add an OPTIONS route.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function options(string $uri, $action)
-    {
-        return self::addRoute(['OPTIONS'], $uri, $action);
-    }
-
-    /**
-     * Add a route for all available methods.
-     *
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function any(string $uri, $action)
-    {
-        return self::addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $uri, $action);
-    }
-
-    /**
-     * Add a route that responds to multiple HTTP methods.
-     *
-     * @param array $methods
-     * @param string $uri
-     * @param mixed $action
-     * @return Route
-     */
-    public static function match(array $methods, string $uri, $action)
-    {
-        return self::addRoute($methods, $uri, $action);
-    }
-
-    /**
-     * Register a resource route.
-     *
-     * @param string $name
-     * @param string $controller
-     * @param array $options
-     * @return void
-     */
-    public static function resource(string $name, string $controller, array $options = [])
-    {
-        $base = trim($name, '/');
-
-        // Set up available actions (Laravel naming conventions)
-        $resourceActions = [
-            'index' => ['get', $base],
-            'store' => ['post', $base],
-            'show' => ['get', "$base/{id}"],
-            'update' => ['put', "$base/{id}"],
-            'destroy' => ['delete', "$base/{id}"],
-            'create' => ['get', "$base/create"],
-            'edit' => ['get', "$base/{id}/edit"]
-        ];
-
-        // Handle only/except options
-        $actions = array_keys($resourceActions);
-
-        if (isset($options['only'])) {
-            $actions = array_intersect($actions, (array) $options['only']);
-        }
-
-        if (isset($options['except'])) {
-            $actions = array_diff($actions, (array) $options['except']);
-        }
-
-        // Create the routes
-        foreach ($actions as $action) {
-            list($method, $uri) = $resourceActions[$action];
-
-            // Add parameter constraints if specified
-            $route = self::$method($uri, "$controller@$action");
-
-            if (isset($options['where']) && is_array($options['where'])) {
-                $route->where($options['where']);
-            }
-
-            // Add name to the route
-            if (!isset($options['as'])) {
-                $route->name("$base.$action");
-            } else {
-                $route->name("{$options['as']}.$action");
-            }
-        }
-    }
-
-    /**
-     * Register an API resource route (no create/edit endpoints).
-     *
-     * @param string $name
-     * @param string $controller
-     * @param array $options
-     * @return void
-     */
-    public static function apiResource(string $name, string $controller, array $options = [])
-    {
-        $options['except'] = array_merge($options['except'] ?? [], ['create', 'edit']);
-
-        self::resource($name, $controller, $options);
-    }
-
-    /**
-     * Register multiple API resource routes.
-     *
-     * @param array $resources
-     * @param array $options
-     * @return void
-     */
-    public static function apiResources(array $resources, array $options = [])
-    {
-        foreach ($resources as $name => $controller) {
-            self::apiResource($name, $controller, $options);
-        }
-    }
-
-    /**
      * Add a route to the collection.
      *
-     * @param array $methods
-     * @param string $uri
-     * @param mixed $action
+     * @param  array  $methods
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
      * @return Route
      */
     protected static function addRoute(array $methods, string $uri, $action)
@@ -373,10 +222,10 @@ class Router
         }
 
         // Prepare action and apply group attributes
-        $action = self::parseAction($action);
+        $action     = self::parseAction($action);
         $attributes = [];
 
-        if (!empty(self::$groupStack)) {
+        if (! empty(self::$groupStack)) {
             $lastGroup = end(self::$groupStack);
 
             if (isset($lastGroup['prefix'])) {
@@ -384,7 +233,7 @@ class Router
             }
 
             if (isset($lastGroup['middleware'])) {
-                $attributes['middleware'] = (array) $lastGroup['middleware'];
+                $attributes['middleware'] = (array)$lastGroup['middleware'];
             }
 
             // Pass along any parameter patterns from the group
@@ -394,7 +243,7 @@ class Router
         }
 
         $namespace = self::$namespace;
-        if (!empty(self::$groupStack) && isset(end(self::$groupStack)['namespace'])) {
+        if (! empty(self::$groupStack) && isset(end(self::$groupStack)['namespace'])) {
             $namespace = end(self::$groupStack)['namespace'];
         }
 
@@ -402,12 +251,12 @@ class Router
         $route = new Route($methods, $uri, $action, $namespace);
 
         // Apply global parameter patterns
-        if (!empty(self::$patterns)) {
+        if (! empty(self::$patterns)) {
             $route->where(self::$patterns);
         }
 
         // Apply group attributes
-        if (!empty($attributes)) {
+        if (! empty($attributes)) {
             $route->setAttributes($attributes);
         }
 
@@ -424,13 +273,14 @@ class Router
     /**
      * Parse the action into a standard format.
      *
-     * @param mixed $action
+     * @param  mixed  $action
+     *
      * @return array
      */
     protected static function parseAction($action)
     {
         // If the action is a callable, wrap it in an array
-        if (is_callable($action) && !is_string($action)) {
+        if (is_callable($action) && ! is_string($action)) {
             return ['callback' => $action];
         }
 
@@ -439,9 +289,10 @@ class Router
             // Check if it's a Controller@method format
             if (strpos($action, '@') !== false) {
                 list($controller, $method) = explode('@', $action, 2);
+
                 return [
                     'controller' => $controller,
-                    'method' => $method
+                    'method'     => $method
                 ];
             }
 
@@ -450,10 +301,14 @@ class Router
         }
 
         // Handle [ClassName::class, 'methodName'] format
-        if (is_array($action) && count($action) === 2 && isset($action[0]) && isset($action[1]) && is_string($action[0]) && is_string($action[1])) {
+        if (
+            is_array($action) && count($action) === 2 && isset($action[0]) && isset($action[1]) && is_string(
+                $action[0]
+            ) && is_string($action[1])
+        ) {
             return [
                 'controller' => $action[0],
-                'method' => $action[1]
+                'method'     => $action[1]
             ];
         }
 
@@ -462,9 +317,188 @@ class Router
     }
 
     /**
+     * Add a POST route.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function post(string $uri, $action)
+    {
+        return self::addRoute(['POST'], $uri, $action);
+    }
+
+    /**
+     * Add a PUT route.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function put(string $uri, $action)
+    {
+        return self::addRoute(['PUT'], $uri, $action);
+    }
+
+    /**
+     * Add a PATCH route.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function patch(string $uri, $action)
+    {
+        return self::addRoute(['PATCH'], $uri, $action);
+    }
+
+    /**
+     * Add a DELETE route.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function delete(string $uri, $action)
+    {
+        return self::addRoute(['DELETE'], $uri, $action);
+    }
+
+    /**
+     * Add an OPTIONS route.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function options(string $uri, $action)
+    {
+        return self::addRoute(['OPTIONS'], $uri, $action);
+    }
+
+    /**
+     * Add a route for all available methods.
+     *
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function any(string $uri, $action)
+    {
+        return self::addRoute(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], $uri, $action);
+    }
+
+    /**
+     * Add a route that responds to multiple HTTP methods.
+     *
+     * @param  array  $methods
+     * @param  string  $uri
+     * @param  mixed  $action
+     *
+     * @return Route
+     */
+    public static function match(array $methods, string $uri, $action)
+    {
+        return self::addRoute($methods, $uri, $action);
+    }
+
+    /**
+     * Register multiple API resource routes.
+     *
+     * @param  array  $resources
+     * @param  array  $options
+     *
+     * @return void
+     */
+    public static function apiResources(array $resources, array $options = [])
+    {
+        foreach ($resources as $name => $controller) {
+            self::apiResource($name, $controller, $options);
+        }
+    }
+
+    /**
+     * Register an API resource route (no create/edit endpoints).
+     *
+     * @param  string  $name
+     * @param  string  $controller
+     * @param  array  $options
+     *
+     * @return void
+     */
+    public static function apiResource(string $name, string $controller, array $options = [])
+    {
+        $options['except'] = array_merge($options['except'] ?? [], ['create', 'edit']);
+
+        self::resource($name, $controller, $options);
+    }
+
+    /**
+     * Register a resource route.
+     *
+     * @param  string  $name
+     * @param  string  $controller
+     * @param  array  $options
+     *
+     * @return void
+     */
+    public static function resource(string $name, string $controller, array $options = [])
+    {
+        $base = trim($name, '/');
+
+        // Set up available actions (Laravel naming conventions)
+        $resourceActions = [
+            'index'   => ['get', $base],
+            'store'   => ['post', $base],
+            'show'    => ['get', "$base/{id}"],
+            'update'  => ['put', "$base/{id}"],
+            'destroy' => ['delete', "$base/{id}"],
+            'create'  => ['get', "$base/create"],
+            'edit'    => ['get', "$base/{id}/edit"]
+        ];
+
+        // Handle only/except options
+        $actions = array_keys($resourceActions);
+
+        if (isset($options['only'])) {
+            $actions = array_intersect($actions, (array)$options['only']);
+        }
+
+        if (isset($options['except'])) {
+            $actions = array_diff($actions, (array)$options['except']);
+        }
+
+        // Create the routes
+        foreach ($actions as $action) {
+            list($method, $uri) = $resourceActions[$action];
+
+            // Add parameter constraints if specified
+            $route = self::$method($uri, "$controller@$action");
+
+            if (isset($options['where']) && is_array($options['where'])) {
+                $route->where($options['where']);
+            }
+
+            // Add name to the route
+            if (! isset($options['as'])) {
+                $route->name("$base.$action");
+            } else {
+                $route->name("{$options['as']}.$action");
+            }
+        }
+    }
+
+    /**
      * Set the default namespace for all routes.
      *
-     * @param string $namespace
+     * @param  string  $namespace
+     *
      * @return void
      */
     public static function setNamespace(string $namespace)
@@ -475,20 +509,21 @@ class Router
     /**
      * Get a route URL by name.
      *
-     * @param string $name
-     * @param array $parameters
-     * @param bool $absolute
+     * @param  string  $name
+     * @param  array  $parameters
+     * @param  bool  $absolute
+     *
      * @return string
      */
     public static function url(string $name, array $parameters = [], bool $absolute = true)
     {
-        if (!self::$routes) {
+        if (! self::$routes) {
             throw new \InvalidArgumentException("Route collection not initialized.");
         }
 
         $route = self::$routes->getByName($name);
 
-        if (!$route) {
+        if (! $route) {
             throw new \InvalidArgumentException("Route [{$name}] not defined.");
         }
 
@@ -515,19 +550,10 @@ class Router
     }
 
     /**
-     * Get all registered routes.
-     *
-     * @return array
-     */
-    public static function getRoutes()
-    {
-        return self::$routes ? self::$routes->getRoutes() : [];
-    }
-
-    /**
      * Get a route by name.
      *
-     * @param string $name
+     * @param  string  $name
+     *
      * @return Route|null
      */
     public static function getByName(string $name)

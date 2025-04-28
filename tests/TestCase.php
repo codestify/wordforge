@@ -29,9 +29,10 @@ class TestCase extends BaseTestCase
     /**
      * Mock a WordPress function
      *
-     * @param string $function Function name
-     * @param mixed $return Return value
-     * @param array $args Expected arguments
+     * @param  string  $function  Function name
+     * @param  mixed  $return  Return value
+     * @param  array  $args  Expected arguments
+     *
      * @return void
      */
     protected function mockWpFunction(string $function, $return = null, array $args = [])
@@ -42,9 +43,10 @@ class TestCase extends BaseTestCase
     /**
      * Assert that two SQL queries are equivalent
      *
-     * @param string $expected Expected SQL query
-     * @param string $actual Actual SQL query
-     * @param string $message Optional assertion message
+     * @param  string  $expected  Expected SQL query
+     * @param  string  $actual  Actual SQL query
+     * @param  string  $message  Optional assertion message
+     *
      * @return void
      */
     protected function assertSqlEquals(string $expected, string $actual, string $message = '')
