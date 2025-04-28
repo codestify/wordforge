@@ -2,21 +2,10 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         verbose="true"
-         failOnWarning="false"
-         failOnRisky="false"
-         failOnIncomplete="false"
-         failOnSkipped="false"
-         failOnDeprecation="false">
+         colors="true">
     <testsuites>
         <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit</directory>
+            <directory>./tests/Unit</directory>
         </testsuite>
 <!--        <testsuite name="Integration">-->
 <!--            <directory suffix="Test.php">./tests/Integration</directory>-->
@@ -36,15 +25,14 @@
         <report>
             <clover outputFile="tests/coverage/clover.xml"/>
             <html outputDirectory="tests/coverage" lowUpperBound="35" highLowerBound="70"/>
-            <text outputFile="php://stdout" showUncoveredFiles="false" showOnlySummary="true"/>
+            <text outputFile="php://stdout" showOnlySummary="true"/>
         </report>
     </coverage>
     <php>
         <ini name="display_errors" value="true"/>
-        <ini name="error_reporting" value="-1"/>
-        <ini name="memory_limit" value="512M"/>
         <!-- Disable deprecation notices for PHP 8.x -->
-        <ini name="error_reporting" value="E_ALL & ~E_DEPRECATED"/>
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
+        <ini name="memory_limit" value="512M"/>
         <server name="APP_ENV" value="testing"/>
         <server name="WP_DEBUG" value="true"/>
         <const name="WP_DEBUG" value="true"/>
