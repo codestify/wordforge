@@ -283,3 +283,34 @@ if (! function_exists('wordforge_dd')) {
         die(1);
     }
 }
+
+if (! function_exists('wordforge_service')) {
+    /**
+     * Get a service from the service manager
+     * 
+     * @param string|null $name
+     * @param mixed ...$params
+     * @return mixed
+     */
+    function wordforge_service($name = null, ...$params)
+    {
+        if ($name === null) {
+            return \WordForge\Support\ServiceManager::class;
+        }
+        
+        return \WordForge\Support\ServiceManager::get($name, ...$params);
+    }
+}
+
+if (! function_exists('wordforge_has_service')) {
+    /**
+     * Check if a service exists
+     * 
+     * @param string $name
+     * @return bool
+     */
+    function wordforge_has_service($name)
+    {
+        return \WordForge\Support\ServiceManager::has($name);
+    }
+}

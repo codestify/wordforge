@@ -3,6 +3,7 @@
 namespace WordForge;
 
 use WordForge\Http\Router\Router;
+use WordForge\Support\ServiceManager;
 use WordForge\Support\ServiceProvider;
 
 /**
@@ -20,18 +21,18 @@ class WordForge
     const VERSION = '1.0.0';
 
     /**
-     * The base path of the framework.
+     * The framework base path.
      *
      * @var string
      */
-    protected static $basePath;
-
+    protected static $frameworkPath;
+    
     /**
-     * The registered service providers.
+     * The application base path.
      *
-     * @var array
+     * @var string
      */
-    protected static $serviceProviders = [];
+    protected static $appPath;
 
     /**
      * The framework configuration.
@@ -39,42 +40,85 @@ class WordForge
      * @var array
      */
     protected static $config = [];
+    
+    /**
+     * Whether the framework has been bootstrapped.
+     *
+     * @var bool
+     */
+    protected static $bootstrapped = false;
 
     /**
      * Bootstrap the framework.
      *
-     * @param string $basePath
+     * @param string $pluginPath Path to the plugin's root directory
      * @return void
      */
-    public static function bootstrap(string $basePath)
+    public static function bootstrap(string $pluginPath)
     {
-        self::$basePath = $basePath;
+        // Prevent double bootstrapping
+        if (self::$bootstrapped) {
+            return;
+        }
 
-        // Initialize the framework
-        self::initialize();
+        // Set application path (plugin root)
+        self::$appPath = $pluginPath;
+        
+        // Detect framework path - either same as plugin or in vendor directory
+        $possibleFrameworkPath = __DIR__ . '/..';
+        if (file_exists($possibleFrameworkPath . '/src/WordForge.php')) {
+            self::$frameworkPath = $possibleFrameworkPath;
+        } else {
+            // If we can't find it, assume it's the same as the app path
+            self::$frameworkPath = $pluginPath;
+        }
+        
+        // Load helper functions if not already loaded
+        $helpersFile = self::$frameworkPath . '/src/Support/helpers.php';
+        if (file_exists($helpersFile) && !function_exists('wordforge_config')) {
+            require_once $helpersFile;
+        }
 
-        // Register REST API hooks
+        // Set up facade aliases for global usage if they don't exist
+        if (!class_exists('Route')) {
+            class_alias('WordForge\Support\Facades\Route', 'Route');
+            class_alias('WordForge\Support\Facades\Response', 'Response');
+            class_alias('WordForge\Support\Facades\Request', 'Request');
+        }
+
+        // Mark as bootstrapped
+        self::$bootstrapped = true;
+        
+        // Schedule initialization on WordPress hooks
+        add_action('plugins_loaded', [self::class, 'initialize'], 5);
         add_action('rest_api_init', [self::class, 'registerRoutes']);
-
-        // Register any other hooks needed
-        self::registerHooks();
     }
-
+    
     /**
-     * Initialize the framework.
+     * Initialize the framework components.
      *
      * @return void
      */
-    protected static function initialize()
+    public static function initialize()
     {
+        if (!self::$bootstrapped) {
+            return;
+        }
+
         // Load configuration
         self::loadConfiguration();
+
+        // Register core services
+        self::registerCoreServices();
 
         // Initialize the router
         Router::init();
 
         // Load the service providers
         self::loadServiceProviders();
+        
+        // Register any other hooks needed
+        self::registerHooks();
     }
 
     /**
@@ -84,14 +128,113 @@ class WordForge
      */
     protected static function loadConfiguration()
     {
-        $configPath = self::$basePath . '/config';
-
-        if (is_dir($configPath)) {
-            foreach (glob($configPath . '/*.php') as $file) {
+        // First load default framework configs if they exist
+        $frameworkConfigPath = self::$frameworkPath . '/config';
+        if (is_dir($frameworkConfigPath)) {
+            foreach (glob($frameworkConfigPath . '/*.php') as $file) {
                 $name = basename($file, '.php');
                 self::$config[$name] = require $file;
             }
         }
+
+        // Then load and merge app configs, giving them priority
+        $appConfigPath = self::$appPath . '/config';
+        if (is_dir($appConfigPath) && $appConfigPath !== $frameworkConfigPath) {
+            foreach (glob($appConfigPath . '/*.php') as $file) {
+                $name = basename($file, '.php');
+                
+                // If config already exists, merge with app config taking precedence
+                if (isset(self::$config[$name]) && is_array(self::$config[$name])) {
+                    $defaultConfig = self::$config[$name];
+                    $appConfig = require $file;
+                    self::$config[$name] = self::mergeConfigs($defaultConfig, $appConfig);
+                } else {
+                    // Otherwise just use the app config
+                    self::$config[$name] = require $file;
+                }
+            }
+        }
+
+        // Ensure we have at least a minimal app config if none was found
+        if (!isset(self::$config['app'])) {
+            self::$config['app'] = [
+                'name' => 'WordForge App',
+                'api_prefix' => 'wordforge/v1',
+                'providers' => [],
+            ];
+        }
+    }
+    
+    /**
+     * Recursively merge configs with app config values taking precedence
+     * 
+     * @param array $default Default config
+     * @param array $app App config
+     * @return array Merged config
+     */
+    protected static function mergeConfigs(array $default, array $app)
+    {
+        $merged = $default;
+        
+        foreach ($app as $key => $value) {
+            // If value is array and exists in default, merge recursively
+            if (is_array($value) && isset($default[$key]) && is_array($default[$key])) {
+                $merged[$key] = self::mergeConfigs($default[$key], $value);
+            } else {
+                // Otherwise app value overrides default
+                $merged[$key] = $value;
+            }
+        }
+        
+        return $merged;
+    }
+    
+    /**
+     * Register core services
+     * 
+     * @return void
+     */
+    protected static function registerCoreServices()
+    {
+        // Register the framework itself
+        ServiceManager::instance('wordforge', self::class);
+        
+        // Register router service
+        ServiceManager::singleton('router', function() {
+            return Router::class;
+        });
+        
+        // Register request service (create a fresh one each time)
+        ServiceManager::register('request', function($wpRequest = null) {
+            if ($wpRequest === null) {
+                // Try to get the current WP REST Request
+                global $wp_rest_server;
+                if ($wp_rest_server && property_exists($wp_rest_server, 'current_request')) {
+                    $wpRequest = $wp_rest_server->current_request;
+                }
+                
+                // If still null, create a mock request
+                if ($wpRequest === null) {
+                    $wpRequest = new \WP_REST_Request();
+                }
+            }
+            
+            return new \WordForge\Http\Request($wpRequest);
+        });
+        
+        // Register response factory
+        ServiceManager::register('response', function($data = null, $status = 200, $headers = []) {
+            return new \WordForge\Http\Response($data, $status, $headers);
+        });
+        
+        // Register the database query builder
+        ServiceManager::register('db', function($table = null) {
+            if ($table === null) {
+                return \WordForge\Database\QueryBuilder::class;
+            }
+            
+            return \WordForge\Database\QueryBuilder::table($table);
+        });
     }
 
     /**
@@ -102,37 +245,9 @@ class WordForge
     protected static function loadServiceProviders()
     {
         $providers = self::config('app.providers', []);
-
-        foreach ($providers as $provider) {
-            self::registerServiceProvider($provider);
-        }
-    }
-
-    /**
-     * Register a service provider.
-     *
-     * @param string $provider
-     * @return void
-     */
-    public static function registerServiceProvider(string $provider)
-    {
-        if (isset(self::$serviceProviders[$provider])) {
-            return;
-        }
-
-        if (class_exists($provider)) {
-            $instance = new $provider();
-
-            if ($instance instanceof ServiceProvider) {
-                // Register the provider
-                $instance->register();
-
-                // Bootstrap the provider
-                $instance->boot();
-
-                self::$serviceProviders[$provider] = $instance;
-            }
-        }
+        
+        // Use the new service provider manager
+        ServiceProviderManager::register($providers);
     }
 
     /**
@@ -142,10 +257,20 @@ class WordForge
      */
     public static function registerRoutes(): void
     {
-        // Load the routes file if it exists
-        $routesFile = self::config('app.routes_file', self::$basePath . '/routes/api.php');
-        if (file_exists($routesFile)) {
-            require_once $routesFile;
+        if (!self::$bootstrapped) {
+            return;
+        }
+
+        // First try app routes file
+        $appRoutesFile = self::$appPath . '/routes/api.php';
+        if (file_exists($appRoutesFile)) {
+            require_once $appRoutesFile;
+        } else {
+            // Fall back to framework routes file or config setting
+            $routesFile = self::config('app.routes_file', self::$frameworkPath . '/routes/api.php');
+            if (file_exists($routesFile)) {
+                require_once $routesFile;
+            }
         }
 
         // Register the routes with WordPress
@@ -187,14 +312,36 @@ class WordForge
     }
 
     /**
-     * Get the base path of the framework.
+     * Get the framework path.
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function frameworkPath(string $path = '')
+    {
+        return self::$frameworkPath . ($path ? '/' . $path : '');
+    }
+
+    /**
+     * Get the application path.
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function appPath(string $path = '')
+    {
+        return self::$appPath . ($path ? '/' . $path : '');
+    }
+    
+    /**
+     * Get the base path (alias for appPath for backward compatibility)
      *
      * @param string $path
      * @return string
      */
     public static function basePath(string $path = '')
     {
-        return self::$basePath . ($path ? '/' . $path : '');
+        return self::appPath($path);
     }
 
     /**
@@ -205,7 +352,39 @@ class WordForge
      */
     public static function assetUrl(string $path)
     {
-        return plugins_url('assets/' . $path, self::$basePath . '/wordforge.php');
+        // Find the main plugin file
+        $pluginFile = self::findPluginFile(self::$appPath);
+        
+        return plugins_url('assets/' . $path, $pluginFile);
+    }
+    
+    /**
+     * Find the main plugin file in the given directory
+     * 
+     * @param string $directory
+     * @return string
+     */
+    protected static function findPluginFile($directory)
+    {
+        // First look for typical plugin filenames
+        $commonNames = ['plugin.php', 'index.php', basename($directory) . '.php'];
+        
+        foreach ($commonNames as $name) {
+            if (file_exists($directory . '/' . $name)) {
+                return $directory . '/' . $name;
+            }
+        }
+        
+        // Otherwise, look for any PHP file with Plugin Name: in the header
+        foreach (glob($directory . '/*.php') as $file) {
+            $content = file_get_contents($file);
+            if (preg_match('/Plugin Name:/i', $content)) {
+                return $file;
+            }
+        }
+        
+        // If no plugin file found, return directory
+        return $directory;
     }
 
     /**
@@ -217,7 +396,15 @@ class WordForge
     public static function viewPath(string $view)
     {
         $view = str_replace('.', '/', $view);
-        return self::$basePath . '/views/' . $view . '.php';
+        
+        // First check in app views
+        $appViewPath = self::$appPath . '/views/' . $view . '.php';
+        if (file_exists($appViewPath)) {
+            return $appViewPath;
+        }
+        
+        // Fall back to framework views
+        return self::$frameworkPath . '/views/' . $view . '.php';
     }
 
     /**
@@ -252,5 +439,15 @@ class WordForge
     public static function version()
     {
         return self::VERSION;
+    }
+    
+    /**
+     * Check if the framework has been bootstrapped.
+     *
+     * @return bool
+     */
+    public static function isBootstrapped()
+    {
+        return self::$bootstrapped;
     }
 }

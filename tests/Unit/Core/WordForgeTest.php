@@ -7,6 +7,24 @@ use WordForge\WordForge;
 
 class WordForgeTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Reset the WordForge internal state
+        $reflector = new \ReflectionClass(WordForge::class);
+
+        // Reset bootstrapped flag
+        $bootstrappedProperty = $reflector->getProperty('bootstrapped');
+        $bootstrappedProperty->setAccessible(true);
+        $bootstrappedProperty->setValue(null, false);
+
+        // Reset config
+        $configProperty = $reflector->getProperty('config');
+        $configProperty->setAccessible(true);
+        $configProperty->setValue(null, []);
+    }
+
     /**
      * Test the bootstrap method initializes the framework correctly.
      */
@@ -22,7 +40,7 @@ class WordForgeTest extends TestCase
         WordForge::bootstrap($basePath);
 
         // Assert
-        $this->assertEquals($basePath, $this->getPrivateProperty(WordForge::class, 'basePath'));
+        $this->assertEquals($basePath, $this->getPrivateProperty(WordForge::class, 'appPath'));
     }
 
     /**
@@ -52,7 +70,7 @@ class WordForgeTest extends TestCase
 
         // Act & Assert
         $this->assertEquals('WordForge', WordForge::config('app.name'));
-        $this->assertEquals(true, WordForge::config('app.debug'));
+        $this->assertTrue(WordForge::config('app.debug'));
         $this->assertEquals(['TestServiceProvider'], WordForge::config('app.providers'));
         $this->assertEquals('wp_', WordForge::config('database.prefix'));
 
@@ -77,60 +95,18 @@ class WordForgeTest extends TestCase
     }
 
     /**
-     * Test the assetUrl method returns the correct URL.
+     * Test the appPath method returns the correct path.
      */
-    public function testAssetUrl()
-    {
-        // Arrange
-        $basePath = __DIR__ . '/../../';
-        $this->mockWpFunction('add_action', true);
-        $this->mockWpFunction('plugins_url', 'https://example.com/wp-content/plugins/wordforge/assets/css/styles.css');
-
-        WordForge::bootstrap($basePath);
-
-        // Act
-        $url = WordForge::assetUrl('css/styles.css');
-
-        // Assert
-        $this->assertEquals('https://example.com/wp-content/plugins/wordforge/assets/css/styles.css', $url);
-    }
-
-
-    public function testRegisterServiceProvider()
+    public function testAppPath()
     {
         // Arrange
         $basePath = __DIR__ . '/../../';
         $this->mockWpFunction('add_action', true);
         WordForge::bootstrap($basePath);
 
-        // Method 1: Use a real class instead of a mock
-        // Create a concrete test service provider
-        $testProvider = new class extends \WordForge\Support\ServiceProvider {
-            public $registerCalled = false;
-            public $bootCalled = false;
-
-            public function register(): void {
-                $this->registerCalled = true;
-            }
-
-            public function boot(): void {
-                $this->bootCalled = true;
-            }
-        };
-
-        $providerClass = get_class($testProvider);
-
-        // Act
-        WordForge::registerServiceProvider($providerClass);
-
-        // Assert
-        $providers = $this->getPrivateProperty(WordForge::class, 'serviceProviders');
-        $this->assertArrayHasKey($providerClass, $providers);
-
-
-        $registeredProvider = $providers[$providerClass];
-        $this->assertTrue($registeredProvider->registerCalled);
-        $this->assertTrue($registeredProvider->bootCalled);
+        // Act & Assert
+        $this->assertEquals($basePath, WordForge::appPath());
+        $this->assertEquals($basePath . '/config', WordForge::appPath('config'));
     }
 
     /**
