@@ -1,6 +1,6 @@
 # WordForge: An Opinionated SLIM MVC Framework for WordPress
 
-[![CI Status](https://github.com/codemystify/wordforge/actions/workflows/ci.yml/badge.svg)](https://github.com/codemystify/wordforge/actions/workflows/ci.yml)
+[![CI Status](https://github.com/codestify/wordforge/actions/workflows/ci.yml/badge.svg)](https://github.com/codestify/wordforge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PHP Version](https://img.shields.io/badge/php-%3E%3D8.0-blue.svg)](https://php.net/)
 
