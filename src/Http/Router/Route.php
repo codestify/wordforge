@@ -666,6 +666,10 @@ class Route
                 $pattern = substr($pattern, 1, -1);
             }
 
+            // If the pattern doesn't already have delimiters, we need to add them
+            // But first we need to escape any delimiter characters in the pattern
+            $pattern = str_replace('/', '\\/', $pattern);
+
             // Add delimiters and anchors
             $delimitedPattern = '/^' . $pattern . '$/';
 
