@@ -2,6 +2,9 @@
 
 namespace WordForge;
 
+use WordForge\Database\QueryBuilder;
+use WordForge\Http\Request;
+use WordForge\Http\Response;
 use WordForge\Http\Router\Router;
 use WordForge\Support\ServiceManager;
 
@@ -220,21 +223,21 @@ class WordForge
                 }
             }
 
-            return new \WordForge\Http\Request($wpRequest);
+            return new Request($wpRequest);
         });
 
         // Register response factory
         ServiceManager::register('response', function ($data = null, $status = 200, $headers = []) {
-            return new \WordForge\Http\Response($data, $status, $headers);
+            return new Response($data, $status, $headers);
         });
 
         // Register the database query builder
         ServiceManager::register('db', function ($table = null) {
             if ($table === null) {
-                return \WordForge\Database\QueryBuilder::class;
+                return QueryBuilder::class;
             }
 
-            return \WordForge\Database\QueryBuilder::table($table);
+            return QueryBuilder::table($table);
         });
     }
 

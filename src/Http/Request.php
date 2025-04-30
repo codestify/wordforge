@@ -2,6 +2,7 @@
 
 namespace WordForge\Http;
 
+use WordForge\Support\ParameterConverter;
 use WordForge\Validation\ValidationException;
 use WordForge\Validation\Validator;
 
@@ -36,6 +37,13 @@ class Request
     protected $cachedData = null;
 
     /**
+     * Parameter converter instance.
+     *
+     * @var ParameterConverter
+     */
+    protected $parameterConverter;
+
+    /**
      * Create a new Request instance.
      *
      * @param  \WP_REST_Request  $wpRequest
@@ -45,6 +53,7 @@ class Request
     public function __construct(\WP_REST_Request $wpRequest)
     {
         $this->wpRequest = $wpRequest;
+        $this->parameterConverter = new ParameterConverter();
     }
 
     /**
@@ -93,8 +102,8 @@ class Request
             return $this->cachedData;
         }
 
-        // Get URL parameters
-        $urlParams = $this->wpRequest->get_url_params() ?: [];
+        // Get URL parameters (processed through parameter converter)
+        $urlParams = $this->params();
 
         // Get query parameters
         $queryParams = $this->wpRequest->get_query_params() ?: [];
@@ -349,9 +358,28 @@ class Request
      */
     public function param(string $key, $default = null)
     {
-        $params = $this->wpRequest->get_url_params();
+        $params = $this->params();
 
-        return $params[$key] ?? $default;
+        // Check for both camelCase and snake_case versions of the parameter
+        if (isset($params[$key])) {
+            return $params[$key];
+        }
+
+        // Check for alternate format
+        $altKey = null;
+        if (str_contains($key, '_')) {
+            // If key is snake_case, try camelCase
+            $altKey = $this->parameterConverter->snakeToCamel($key);
+        } else {
+            // If key might be camelCase, try snake_case
+            $altKey = $this->parameterConverter->camelToSnake($key);
+        }
+
+        if ($altKey !== $key && isset($params[$altKey])) {
+            return $params[$altKey];
+        }
+
+        return $default;
     }
 
     /**
@@ -361,7 +389,10 @@ class Request
      */
     public function params()
     {
-        return $this->wpRequest->get_url_params() ?: [];
+        $params = $this->wpRequest->get_url_params() ?: [];
+
+        // Process parameters using the converter for consistent access
+        return $this->parameterConverter->processUrlParameters($params);
     }
 
     /**
