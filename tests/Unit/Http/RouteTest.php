@@ -306,7 +306,7 @@ class RouteTest extends TestCase
     {
         // Use reflection to access the protected method
         $reflectionClass = new \ReflectionClass(Route::class);
-        $method = $reflectionClass->getMethod('convertUriToWordPressPattern');
+        $method          = $reflectionClass->getMethod('convertUriToWordPressPattern');
         $method->setAccessible(true);
 
         $route = new Route(['GET'], 'dummy', 'dummy', 'dummy');
