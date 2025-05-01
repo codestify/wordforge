@@ -9,13 +9,7 @@ A Laravel-inspired routing system for WordPress REST API with PHP 8 compatibilit
 - Route groups and middleware
 - Resource routing
 - Named routes with URL generation
-- Fully PHP 8 compatible with modern features:
-  - Union types
-  - Constructor property promotion
-  - Named arguments
-  - Match expressions
-  - Nullsafe operator
-  - Strict type declarations
+
 
 ## Usage
 
