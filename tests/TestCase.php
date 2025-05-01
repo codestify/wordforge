@@ -14,8 +14,6 @@ class TestCase extends BaseTestCase
 {
     /**
      * Set up the test environment.
-     *
-     * @return void
      */
     protected function setUp(): void
     {
@@ -28,28 +26,16 @@ class TestCase extends BaseTestCase
 
     /**
      * Mock a WordPress function
-     *
-     * @param  string  $function  Function name
-     * @param  mixed  $return  Return value
-     * @param  array  $args  Expected arguments
-     *
-     * @return void
      */
-    protected function mockWpFunction(string $function, $return = null, array $args = [])
+    protected function mockWpFunction(string $function, mixed $return = null, array $args = []): void
     {
         wp_mock_function($function, $return);
     }
 
     /**
      * Assert that two SQL queries are equivalent
-     *
-     * @param  string  $expected  Expected SQL query
-     * @param  string  $actual  Actual SQL query
-     * @param  string  $message  Optional assertion message
-     *
-     * @return void
      */
-    protected function assertSqlEquals(string $expected, string $actual, string $message = '')
+    protected function assertSqlEquals(string $expected, string $actual, string $message = ''): void
     {
         assert_sql_equals($expected, $actual, $message);
     }

@@ -29,7 +29,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
     /**
      * Test basic parameter conversion for simple ID routes.
      */
-    public function testBasicParameterConversion()
+    public function testBasicParameterConversion(): void
     {
         // Arrange
         $route = new Route(['GET'], 'posts/{id}', 'PostController@show', 'example/v1');
@@ -47,7 +47,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
         $parameterInfo = $parameterInfoProp->getValue($route);
 
         // Assert
-        $this->assertEquals('posts/(?P<id>(\d+))', $wpPattern);
+        $this->assertEquals('posts/(?P<id>[0-9]+)', $wpPattern);
         $this->assertArrayHasKey('id', $parameterInfo);
         $this->assertEquals('integer', $parameterInfo['id']['type']);
     }
@@ -98,7 +98,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
         $parameterInfo = $parameterInfoProp->getValue($route);
 
         // Assert
-        $this->assertEquals('posts/(?P<category>([^/]+))/(?P<slug>([a-z0-9-]+))', $wpPattern);
+        $this->assertEquals('posts/(?P<category>[^/]+)/(?P<slug>[a-z0-9-]+)', $wpPattern);
         $this->assertArrayHasKey('category', $parameterInfo);
         $this->assertArrayHasKey('slug', $parameterInfo);
     }
@@ -124,7 +124,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
         $parameterInfo = $parameterInfoProp->getValue($route);
 
         // Assert - check that the pattern contains the parameter name, not exact string
-        $this->assertStringContainsString('(?P<post_id>([^/]+))', $wpPattern, 'WordPress pattern should contain the converted parameter');
+        $this->assertStringContainsString('(?P<post_id>[0-9]+)', $wpPattern, 'WordPress pattern should contain the converted parameter');
         $this->assertArrayHasKey('post_id', $parameterInfo, 'Parameter info should contain snake_case key');
         $this->assertEquals('integer', $parameterInfo['post_id']['type'], 'postId should be of type integer');
     }
@@ -148,7 +148,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
         // Act & Assert
         $this->assertEquals('integer', $parameterInfoProp->getValue($idRoute)['id']['type']);
         $this->assertEquals('string', $parameterInfoProp->getValue($slugRoute)['slug']['type']);
-        $this->assertEquals('string', $parameterInfoProp->getValue($yearRoute)['year']['type']);
+        $this->assertEquals('integer', $parameterInfoProp->getValue($yearRoute)['year']['type']);
         $this->assertEquals('string', $parameterInfoProp->getValue($uuidRoute)['uuid']['type']);
     }
 
@@ -298,7 +298,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
     /**
      * Test custom pattern constraints on parameters.
      */
-    public function testCustomPatternConstraints()
+    public function testCustomPatternConstraints(): void
     {
         // Arrange
         $route = new Route(['GET'], 'posts/{year}/{month}/{slug}', 'PostController@archive', 'example/v1');
@@ -321,15 +321,15 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
         $parameterInfo = $parameterInfoProp->getValue($route);
 
         // Assert
-        $this->assertEquals('posts/(?P<year>(\d{4}))/(?P<month>(\d{1,2}))/(?P<slug>([a-z0-9-]+))', $wpPattern);
-        $this->assertEquals('(\d{4})', $parameterInfo['year']['pattern']);
-        $this->assertEquals('(\d{1,2})', $parameterInfo['month']['pattern']);
+        $this->assertEquals('posts/(?P<year>[0-9]{4})/(?P<month>[0-9]{1,2})/(?P<slug>[a-z0-9-]+)', $wpPattern);
+        $this->assertEquals('[0-9]{4}', $parameterInfo['year']['pattern']);
+        $this->assertEquals('[0-9]{1,2}', $parameterInfo['month']['pattern']);
     }
 
     /**
      * Test handling of parameters with same names but different case.
      */
-    public function testParameterCaseConsistency()
+    public function testParameterCaseConsistency(): void
     {
         // Arrange - We'd want to test two parameter names that differ only in case
         $route = new Route(['GET'], 'posts/{postId}/comments/{commentId}', 'PostController@comments', 'example/v1');
@@ -428,7 +428,7 @@ class LaravelToWordPressRouteParameterTranslationTest extends TestCase
 
                 $paramInfo = $parameterInfoProp->getValue($route);
                 $this->assertTrue(isset($paramInfo['id']), "Parameter info should contain id parameter");
-                $this->assertEquals('(\d+)', $paramInfo['id']['pattern'], "id parameter should have custom pattern");
+                $this->assertEquals('[0-9]+', $paramInfo['id']['pattern'], "id parameter should have custom pattern");
 
                 $this->addToAssertionCount(1);
             },

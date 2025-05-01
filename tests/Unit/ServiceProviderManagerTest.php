@@ -8,15 +8,15 @@ use WordForge\Support\ServiceProvider;
 
 class TestServiceProvider extends ServiceProvider
 {
-    public $registerCalled = false;
-    public $bootCalled = false;
+    public bool $registerCalled = false;
+    public bool $bootCalled = false;
 
     public function register(): void
     {
         $this->registerCalled = true;
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->bootCalled = true;
     }

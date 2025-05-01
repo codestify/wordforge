@@ -7,7 +7,7 @@
  * for testing purposes.
  */
 
-if ( ! class_exists('WP_Error')) {
+if (! class_exists('WP_Error')) {
     /**
      * WordPress Error class
      */
@@ -36,7 +36,7 @@ if ( ! class_exists('WP_Error')) {
          */
         public function __construct($code = '', $message = '', $data = '')
         {
-            if ( ! empty($code)) {
+            if (! empty($code)) {
                 $this->add($code, $message, $data);
             }
         }
@@ -54,7 +54,7 @@ if ( ! class_exists('WP_Error')) {
         {
             $this->errors[$code][] = $message;
 
-            if ( ! empty($data)) {
+            if (! empty($data)) {
                 $this->error_data[$code] = $data;
             }
         }
@@ -137,7 +137,7 @@ if ( ! class_exists('WP_Error')) {
     }
 }
 
-if ( ! class_exists('WP_REST_Request')) {
+if (! class_exists('WP_REST_Request')) {
     /**
      * WordPress REST Request class
      */
@@ -407,7 +407,7 @@ if ( ! class_exists('WP_REST_Request')) {
     }
 }
 
-if ( ! class_exists('WP_REST_Response')) {
+if (! class_exists('WP_REST_Response')) {
     /**
      * WordPress REST Response class
      */
@@ -537,7 +537,7 @@ if ( ! class_exists('WP_REST_Response')) {
     }
 }
 
-if ( ! class_exists('WP_REST_Server')) {
+if (! class_exists('WP_REST_Server')) {
     /**
      * WordPress REST Server class
      */
@@ -547,7 +547,7 @@ if ( ! class_exists('WP_REST_Server')) {
     }
 }
 
-if ( ! class_exists('WP_DB')) {
+if (! class_exists('WP_DB')) {
     /**
      * Mock WordPress DB class
      */
@@ -598,14 +598,14 @@ if ( ! class_exists('WP_DB')) {
                 return $query;
             }
 
-            if ( ! is_array($args)) {
+            if (! is_array($args)) {
                 $args = [$args];
             }
 
             $i = 0;
 
             return preg_replace_callback('/%[sdf]/', function ($matches) use (&$i, $args) {
-                if ( ! isset($args[$i])) {
+                if (! isset($args[$i])) {
                     return 'NULL';
                 }
 
@@ -752,6 +752,114 @@ if ( ! class_exists('WP_DB')) {
         public function replace($table, $data, $format = null)
         {
             return 1;
+        }
+    }
+}
+
+if (! class_exists('WP_User')) {
+    /**
+     * Mock WordPress User class
+     */
+    class WP_User
+    {
+        /**
+         * User ID
+         *
+         * @var int
+         */
+        public $ID = 0;
+
+        /**
+         * User login name
+         *
+         * @var string
+         */
+        public $user_login = '';
+
+        /**
+         * User email
+         *
+         * @var string
+         */
+        public $user_email = '';
+
+        /**
+         * User display name
+         *
+         * @var string
+         */
+        public $display_name = '';
+
+        /**
+         * User roles
+         *
+         * @var array
+         */
+        public $roles = [];
+
+        /**
+         * User capabilities
+         *
+         * @var array
+         */
+        public $allcaps = [];
+
+        /**
+         * Constructor
+         *
+         * @param int|string|stdClass|WP_User $id User's ID, a WP_User object, or a user object from the DB.
+         */
+        public function __construct($id = 0) 
+        {
+            if (is_numeric($id) && $id > 0) {
+                $this->ID = (int) $id;
+                // In a real implementation, would load user data here
+            }
+        }
+
+        /**
+         * Check if user has a specific capability
+         *
+         * @param string $cap Capability name.
+         * @return bool Whether the user has the given capability.
+         */
+        public function has_cap($cap) 
+        {
+            return isset($this->allcaps[$cap]) ? (bool) $this->allcaps[$cap] : false;
+        }
+
+        /**
+         * Add a role to the user
+         *
+         * @param string $role Role name.
+         */
+        public function add_role($role) 
+        {
+            $this->roles[] = $role;
+        }
+
+        /**
+         * Remove a role from the user
+         *
+         * @param string $role Role name.
+         */
+        public function remove_role($role) 
+        {
+            $key = array_search($role, $this->roles);
+            if (false !== $key) {
+                unset($this->roles[$key]);
+                $this->roles = array_values($this->roles);
+            }
+        }
+
+        /**
+         * Set the role of the user
+         *
+         * @param string $role Role name.
+         */
+        public function set_role($role) 
+        {
+            $this->roles = [$role];
         }
     }
 }

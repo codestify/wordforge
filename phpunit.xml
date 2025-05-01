@@ -2,19 +2,21 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="./vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
-         colors="true">
+         colors="true"
+         cacheResultFile=".phpunit.cache/test-results"
+         executionOrder="depends,defects"
+         beStrictAboutCoversAnnotation="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true"
+         failOnRisky="true"
+         failOnWarning="true"
+         verbose="true">
     <testsuites>
         <testsuite name="Unit">
-            <directory>./tests/Unit</directory>
+            <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>
-<!--        <testsuite name="Integration">-->
-<!--            <directory suffix="Test.php">./tests/Integration</directory>-->
-<!--        </testsuite>-->
-<!--        <testsuite name="Feature">-->
-<!--            <directory suffix="Test.php">./tests/Feature</directory>-->
-<!--        </testsuite>-->
     </testsuites>
-    <coverage processUncoveredFiles="true">
+    <coverage processUncoveredFiles="true" cacheDirectory=".phpunit.cache/code-coverage">
         <include>
             <directory suffix=".php">./src</directory>
         </include>
@@ -30,9 +32,13 @@
     </coverage>
     <php>
         <ini name="display_errors" value="true"/>
-        <!-- Disable deprecation notices for PHP 8.x -->
-        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
+        <ini name="display_startup_errors" value="true"/>
+        <!-- Show all errors including deprecation notices for debugging -->
+        <ini name="error_reporting" value="E_ALL"/>
         <ini name="memory_limit" value="512M"/>
+        <ini name="log_errors" value="On"/>
+        <ini name="log_errors_max_len" value="0"/>
+        <ini name="error_log" value="tests/php-error.log"/>
         <server name="APP_ENV" value="testing"/>
         <server name="WP_DEBUG" value="true"/>
         <const name="WP_DEBUG" value="true"/>

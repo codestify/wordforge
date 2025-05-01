@@ -45,7 +45,7 @@ class FormRequestTest extends TestCase
             }
 
             // Override all() to return our test data directly
-            public function all()
+            public function all(): array
             {
                 return $this->testData;
             }
@@ -102,13 +102,10 @@ class FormRequestTest extends TestCase
         $formRequest                  = $this->createFormRequest(['name' => 'Test User']);
         $formRequest->authorizeResult = false;
 
-        // Act
-        $result = $formRequest->validate($formRequest->rules());
-
-        // Assert
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('message', $result);
-        $this->assertEquals('Unauthorized', $result['message']);
+        // Act & Assert
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Unauthorized');
+        $formRequest->validate($formRequest->rules());
     }
 
     /**
@@ -120,12 +117,9 @@ class FormRequestTest extends TestCase
         $formRequest                  = $this->createFormRequest(['name' => '']); // Empty name
         $formRequest->authorizeResult = true;
 
-        // Act
-        $result = $formRequest->validate($formRequest->rules());
-
-        // Assert
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('name', $result);
+        // Act & Assert
+        $this->expectException(\WordForge\Validation\ValidationException::class);
+        $formRequest->validate($formRequest->rules());
     }
 
     /**
@@ -138,16 +132,18 @@ class FormRequestTest extends TestCase
         $formRequest->authorizeResult    = true;
         $formRequest->validationMessages = ['name.required' => 'Please provide your name'];
 
-        // Act
-        $result = $formRequest->validate(
-            $formRequest->rules(),
-            $formRequest->validationMessages
-        );
-
-        // Assert
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('name', $result);
-        $this->assertEquals(['Please provide your name'], $result['name']);
+        // Act & Assert
+        try {
+            $formRequest->validate(
+                $formRequest->rules(),
+                $formRequest->validationMessages
+            );
+            $this->fail('Expected ValidationException was not thrown');
+        } catch (\WordForge\Validation\ValidationException $e) {
+            $errors = $e->validator()->errors();
+            $this->assertArrayHasKey('name', $errors);
+            $this->assertEquals(['Please provide your name'], $errors['name']);
+        }
     }
 
     /**
@@ -160,17 +156,19 @@ class FormRequestTest extends TestCase
         $formRequest->validationRules      = ['first_name' => 'required'];
         $formRequest->validationAttributes = ['first_name' => 'First Name'];
 
-        // Act
-        $result = $formRequest->validate(
-            $formRequest->rules(),
-            $formRequest->messages(),
-            $formRequest->validationAttributes
-        );
-
-        // Assert
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('first_name', $result);
-        $this->assertStringContainsString('First Name', $result['first_name'][0]);
+        // Act & Assert
+        try {
+            $formRequest->validate(
+                $formRequest->rules(),
+                $formRequest->messages(),
+                $formRequest->validationAttributes
+            );
+            $this->fail('Expected ValidationException was not thrown');
+        } catch (\WordForge\Validation\ValidationException $e) {
+            $errors = $e->validator()->errors();
+            $this->assertArrayHasKey('first_name', $errors);
+            $this->assertStringContainsString('First Name', $errors['first_name'][0]);
+        }
     }
 
     /**

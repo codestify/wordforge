@@ -16,30 +16,25 @@ class ServiceProviderManager
 {
     /**
      * Registered providers
-     * @var array
      */
-    protected static $providers = [];
+    protected static array $providers = [];
 
     /**
      * Providers that have been registered
-     * @var array
      */
-    protected static $registered = [];
+    protected static array $registered = [];
 
     /**
      * Providers that have been booted
-     * @var array
      */
-    protected static $booted = [];
+    protected static array $booted = [];
 
     /**
      * Register service providers
      *
      * @param  array  $providers  Class names of service providers
-     *
-     * @return void
      */
-    public static function register(array $providers)
+    public static function register(array $providers): void
     {
         self::$providers = array_merge(self::$providers, $providers);
 
@@ -69,12 +64,8 @@ class ServiceProviderManager
 
     /**
      * Initialize a provider (register)
-     *
-     * @param  string  $provider
-     *
-     * @return void
      */
-    protected static function initializeProvider($provider)
+    protected static function initializeProvider(string $provider): void
     {
         // Skip if already registered
         if (isset(self::$registered[$provider])) {
@@ -87,10 +78,8 @@ class ServiceProviderManager
 
     /**
      * Boot all registered providers
-     *
-     * @return void
      */
-    public static function bootProviders()
+    public static function bootProviders(): void
     {
         foreach (self::$registered as $provider => $instance) {
             // Skip if already booted
@@ -105,20 +94,16 @@ class ServiceProviderManager
 
     /**
      * Get all registered providers
-     *
-     * @return array
      */
-    public static function getProviders()
+    public static function getProviders(): array
     {
         return self::$providers;
     }
 
     /**
      * Get all registered provider instances
-     *
-     * @return array
      */
-    public static function getRegisteredProviders()
+    public static function getRegisteredProviders(): array
     {
         return self::$registered;
     }

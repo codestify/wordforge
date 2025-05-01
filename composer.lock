@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d745e1e0ca82ef7037f8a6606d1cd004",
+    "content-hash": "90bc8d8519c8a8d572bf8b743b72fa05",
     "packages": [],
     "packages-dev": [
         {
@@ -142,20 +142,20 @@
         },
         {
             "name": "hamcrest/hamcrest-php",
-            "version": "v2.0.1",
+            "version": "v2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hamcrest/hamcrest-php.git",
-                "reference": "8c3d0a3f6af734494ad8f6fbbee0ba92422859f3"
+                "reference": "f8b1c0173b22fa6ec77a81fe63e5b01eba7e6487"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hamcrest/hamcrest-php/zipball/8c3d0a3f6af734494ad8f6fbbee0ba92422859f3",
-                "reference": "8c3d0a3f6af734494ad8f6fbbee0ba92422859f3",
+                "url": "https://api.github.com/repos/hamcrest/hamcrest-php/zipball/f8b1c0173b22fa6ec77a81fe63e5b01eba7e6487",
+                "reference": "f8b1c0173b22fa6ec77a81fe63e5b01eba7e6487",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.3|^7.0|^8.0"
+                "php": "^7.4|^8.0"
             },
             "replace": {
                 "cordoval/hamcrest-php": "*",
@@ -163,8 +163,8 @@
                 "kodova/hamcrest-php": "*"
             },
             "require-dev": {
-                "phpunit/php-file-iterator": "^1.4 || ^2.0",
-                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5 || ^7.0"
+                "phpunit/php-file-iterator": "^1.4 || ^2.0 || ^3.0",
+                "phpunit/phpunit": "^4.8.36 || ^5.7 || ^6.5 || ^7.0 || ^8.0 || ^9.0"
             },
             "type": "library",
             "extra": {
@@ -187,9 +187,9 @@
             ],
             "support": {
                 "issues": "https://github.com/hamcrest/hamcrest-php/issues",
-                "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.0.1"
+                "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.1.1"
             },
-            "time": "2020-07-09T08:09:16+00:00"
+            "time": "2025-04-30T06:54:44+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -276,16 +276,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.13.0",
+            "version": "1.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "024473a478be9df5fdaca2c793f2232fe788e414"
+                "reference": "1720ddd719e16cf0db4eb1c6eca108031636d46c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/024473a478be9df5fdaca2c793f2232fe788e414",
-                "reference": "024473a478be9df5fdaca2c793f2232fe788e414",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/1720ddd719e16cf0db4eb1c6eca108031636d46c",
+                "reference": "1720ddd719e16cf0db4eb1c6eca108031636d46c",
                 "shasum": ""
             },
             "require": {
@@ -324,7 +324,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.0"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.1"
             },
             "funding": [
                 {
@@ -332,7 +332,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-02-12T12:17:51+00:00"
+            "time": "2025-04-29T12:36:36+00:00"
         },
         {
             "name": "nikic/php-parser",
@@ -512,16 +512,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.24",
+            "version": "1.12.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "338b92068f58d9f8035b76aed6cf2b9e5624c025"
+                "reference": "e310849a19e02b8bfcbb63147f495d8f872dd96f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/338b92068f58d9f8035b76aed6cf2b9e5624c025",
-                "reference": "338b92068f58d9f8035b76aed6cf2b9e5624c025",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e310849a19e02b8bfcbb63147f495d8f872dd96f",
+                "reference": "e310849a19e02b8bfcbb63147f495d8f872dd96f",
                 "shasum": ""
             },
             "require": {
@@ -566,7 +566,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-04-16T13:01:53+00:00"
+            "time": "2025-04-27T12:20:45+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2463,7 +2463,8 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "ext-json": "*"
     },
     "platform-dev": {},
     "plugin-api-version": "2.6.0"

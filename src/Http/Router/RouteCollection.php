@@ -11,81 +11,58 @@ class RouteCollection
 {
     /**
      * The routes stored in the collection.
-     *
-     * @var array
      */
-    protected $routes = [];
+    protected array $routes = [];
 
     /**
      * The named routes stored in the collection.
-     *
-     * @var array
      */
-    protected $namedRoutes = [];
+    protected array $namedRoutes = [];
 
     /**
      * Add a route to the collection.
-     *
-     * @param  Route  $route
-     *
-     * @return void
      */
-    public function add(Route $route)
+    public function add(Route $route): void
     {
         $this->routes[] = $route;
     }
 
     /**
      * Get all routes in the collection.
-     *
-     * @return array
      */
-    public function getRoutes()
+    public function getRoutes(): array
     {
         return $this->routes;
     }
 
     /**
      * Get a route by name.
-     *
-     * @param  string  $name
-     *
-     * @return Route|null
      */
-    public function getByName(string $name)
+    public function getByName(string $name): ?Route
     {
         return $this->namedRoutes[$name] ?? null;
     }
 
     /**
      * Add a named route to the collection.
-     *
-     * @param  string  $name
-     * @param  Route  $route
-     *
-     * @return void
      */
-    public function addNamed(string $name, Route $route)
+    public function addNamed(string $name, Route $route): void
     {
         $this->namedRoutes[$name] = $route;
     }
 
     /**
      * Count the number of routes in the collection.
-     *
-     * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->routes);
     }
 
     /**
      * Clear the route collection.
-     *
-     * @return void
      */
-    public function clear()
+    public function clear(): void
     {
         $this->routes      = [];
         $this->namedRoutes = [];

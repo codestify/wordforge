@@ -8,13 +8,8 @@
 
 /**
  * Get a private or protected property from an object
- *
- * @param  object|string  $object  Object instance or class name
- * @param  string  $propertyName  Property name
- *
- * @return mixed
  */
-function test_get_property($object, $propertyName)
+function test_get_property(object|string $object, string $propertyName): mixed
 {
     $reflection = is_object($object) ? new ReflectionObject($object) : new ReflectionClass($object);
     $property   = $reflection->getProperty($propertyName);
@@ -25,14 +20,8 @@ function test_get_property($object, $propertyName)
 
 /**
  * Set a private or protected property on an object
- *
- * @param  object|string  $object  Object instance or class name
- * @param  string  $propertyName  Property name
- * @param  mixed  $value  New value
- *
- * @return void
  */
-function test_set_property($object, $propertyName, $value)
+function test_set_property(object|string $object, string $propertyName, mixed $value): void
 {
     $reflection = is_object($object) ? new ReflectionObject($object) : new ReflectionClass($object);
     $property   = $reflection->getProperty($propertyName);
@@ -43,14 +32,8 @@ function test_set_property($object, $propertyName, $value)
 
 /**
  * Call a private or protected method on an object
- *
- * @param  object  $object  Object instance
- * @param  string  $methodName  Method name
- * @param  array  $arguments  Method arguments
- *
- * @return mixed
  */
-function test_call_method($object, $methodName, array $arguments = [])
+function test_call_method(object $object, string $methodName, array $arguments = []): mixed
 {
     $reflection = new ReflectionObject($object);
     $method     = $reflection->getMethod($methodName);
@@ -61,18 +44,12 @@ function test_call_method($object, $methodName, array $arguments = [])
 
 /**
  * Create a test fixture (JSON, XML, HTML)
- *
- * @param  string  $name  Fixture name (without extension)
- * @param  string  $type  Fixture type (json, xml, html, etc.)
- * @param  mixed  $data  Data to store in fixture
- *
- * @return string The path to the fixture file
  */
-function test_create_fixture($name, $type, $data)
+function test_create_fixture(string $name, string $type, mixed $data): string
 {
     $fixturesDir = __DIR__.'/fixtures';
 
-    if ( ! is_dir($fixturesDir)) {
+    if (! is_dir($fixturesDir)) {
         mkdir($fixturesDir, 0777, true);
     }
 
@@ -95,18 +72,13 @@ function test_create_fixture($name, $type, $data)
 
 /**
  * Load a test fixture
- *
- * @param  string  $name  Fixture name (without extension)
- * @param  string  $type  Fixture type (json, xml, html, etc.)
- *
- * @return mixed The fixture data
  */
-function test_load_fixture($name, $type)
+function test_load_fixture(string $name, string $type): mixed
 {
     $fixturesDir = __DIR__.'/fixtures';
     $filePath    = "{$fixturesDir}/{$name}.{$type}";
 
-    if ( ! file_exists($filePath)) {
+    if (! file_exists($filePath)) {
         throw new RuntimeException("Fixture not found: {$filePath}");
     }
 
@@ -123,16 +95,10 @@ function test_load_fixture($name, $type)
 
 /**
  * Assert that two SQL queries are equivalent
- *
+ * 
  * Normalizes whitespace and case for SQL keywords before comparison
- *
- * @param  string  $expected  Expected SQL query
- * @param  string  $actual  Actual SQL query
- * @param  string  $message  Optional failure message
- *
- * @return void
  */
-function assert_sql_equals($expected, $actual, $message = '')
+function assert_sql_equals(string $expected, string $actual, string $message = ''): void
 {
     // List of SQL keywords to normalize
     $sqlKeywords = [
@@ -158,7 +124,7 @@ function assert_sql_equals($expected, $actual, $message = '')
     ];
 
     // Function to normalize SQL
-    $normalizeSQL = function ($sql) use ($sqlKeywords) {
+    $normalizeSQL = function (string $sql) use ($sqlKeywords): string {
         // Normalize whitespace
         $sql = preg_replace('/\s+/', ' ', trim($sql));
 
@@ -187,24 +153,16 @@ function assert_sql_equals($expected, $actual, $message = '')
 /**
  * Strips whitespace from a string
  * Useful for comparing HTML output without worrying about formatting
- *
- * @param  string  $string  The input string
- *
- * @return string The string with whitespace removed
  */
-function test_strip_whitespace($string)
+function test_strip_whitespace(string $string): string
 {
     return preg_replace('/\s+/', '', $string);
 }
 
 /**
  * Creates a test object with dynamically assigned properties
- *
- * @param  array  $properties  Associative array of properties
- *
- * @return object
  */
-function test_object(array $properties = [])
+function test_object(array $properties = []): object
 {
     $object = new stdClass();
 
@@ -217,14 +175,8 @@ function test_object(array $properties = [])
 
 /**
  * Creates a mock of global WP_User
- *
- * @param  int  $id  User ID
- * @param  string  $role  User role
- * @param  array  $capabilities  User capabilities
- *
- * @return object
  */
-function test_mock_user($id = 1, $role = 'administrator', array $capabilities = [])
+function test_mock_user(int $id = 1, string $role = 'administrator', array $capabilities = []): object
 {
     $user = test_object([
         'ID'            => $id,

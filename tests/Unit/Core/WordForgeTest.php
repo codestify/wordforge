@@ -13,7 +13,7 @@ class WordForgeTest extends TestCase
     public function testBootstrap()
     {
         // Arrange
-        $basePath = __DIR__.'/../../';
+        $basePath = __DIR__ . '/../../';
 
         // Mock WordPress hooks
         $this->mockWpFunction('add_action', true);
@@ -43,7 +43,7 @@ class WordForgeTest extends TestCase
     public function testConfig()
     {
         // Arrange
-        $basePath = __DIR__.'/../../';
+        $basePath = __DIR__ . '/../../';
         $this->mockWpFunction('add_action', true);
 
         // Set up fake config data using reflection
@@ -81,7 +81,7 @@ class WordForgeTest extends TestCase
         $reflector = new \ReflectionClass($class);
         $property  = $reflector->getProperty($propertyName);
         $property->setAccessible(true);
-        $property->setValue($value);
+        $property->setValue(null, $value);  // Use null for static properties
 
         return $property->getValue();
     }
@@ -92,13 +92,13 @@ class WordForgeTest extends TestCase
     public function testBasePath()
     {
         // Arrange
-        $basePath = __DIR__.'/../../';
+        $basePath = __DIR__ . '/../../';
         $this->mockWpFunction('add_action', true);
         WordForge::bootstrap($basePath);
 
         // Act & Assert
         $this->assertEquals($basePath, WordForge::basePath());
-        $this->assertEquals($basePath.'/config', WordForge::basePath('config'));
+        $this->assertEquals($basePath . '/config', WordForge::basePath('config'));
     }
 
     /**
@@ -107,13 +107,13 @@ class WordForgeTest extends TestCase
     public function testAppPath()
     {
         // Arrange
-        $basePath = __DIR__.'/../../';
+        $basePath = __DIR__ . '/../../';
         $this->mockWpFunction('add_action', true);
         WordForge::bootstrap($basePath);
 
         // Act & Assert
         $this->assertEquals($basePath, WordForge::appPath());
-        $this->assertEquals($basePath.'/config', WordForge::appPath('config'));
+        $this->assertEquals($basePath . '/config', WordForge::appPath('config'));
     }
 
     /**
@@ -122,7 +122,7 @@ class WordForgeTest extends TestCase
     public function testUrl()
     {
         // Arrange
-        $basePath = __DIR__.'/../../';
+        $basePath = __DIR__ . '/../../';
         $this->mockWpFunction('add_action', true);
         $this->mockWpFunction('rest_url', 'https://example.com/wp-json/wordforge/v1');
 

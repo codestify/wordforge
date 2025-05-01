@@ -20,5 +20,6 @@ tests/coverage/
 
 # Ignore PHPUnit cache file
 .phpunit.result.cache
+.phpunit.cache/
 
 # Don't ignore phpunit.xml as we want it in version control
