@@ -666,12 +666,8 @@ class Route
                 $pattern = substr($pattern, 1, -1);
             }
 
-            // If the pattern doesn't already have delimiters, we need to add them
-            // But first we need to escape any delimiter characters in the pattern
-            $pattern = str_replace('/', '\\/', $pattern);
-
-            // Add delimiters and anchors
-            $delimitedPattern = '/^' . $pattern . '$/';
+            // Use # as delimiter instead of / to avoid escaping issues with path segments
+            $delimitedPattern = '#^' . $pattern . '$#';
 
             // Perform the validation
             return preg_match($delimitedPattern, $value) === 1;
