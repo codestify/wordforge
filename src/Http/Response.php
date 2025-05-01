@@ -12,56 +12,32 @@ namespace WordForge\Http;
 class Response
 {
     /**
-     * The response data.
-     *
-     * @var mixed
-     */
-    protected $data;
-
-    /**
-     * The response status code.
-     *
-     * @var int
-     */
-    protected $statusCode = 200;
-
-    /**
-     * The response headers.
-     *
-     * @var array
-     */
-    protected $headers = [];
-
-    /**
      * Create a new Response instance.
-     *
-     * @param  mixed  $data
-     * @param  int  $status
-     * @param  array  $headers
-     *
-     * @return void
      */
-    public function __construct($data = null, int $status = 200, array $headers = [])
-    {
-        $this->data = $data;
-        $this->statusCode = $status;
-        $this->headers = $headers;
+    public function __construct(
+        /**
+         * The response data.
+         */
+        protected mixed $data = null,
+        /**
+         * The response status code.
+         */
+        protected int $statusCode = 200,
+        /**
+         * The response headers.
+         */
+        protected array $headers = []
+    ) {
     }
 
     /**
      * Create a new validation error response.
-     *
-     * @param  array  $errors
-     * @param  string  $message
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function validationError(
         array $errors,
         string $message = 'The given data was invalid',
         array $headers = []
-    ) {
+    ): static {
         return static::json([
             'success' => false,
             'message' => $message,
@@ -71,14 +47,8 @@ class Response
 
     /**
      * Create a new JSON response.
-     *
-     * @param  mixed  $data
-     * @param  int  $status
-     * @param  array  $headers
-     *
-     * @return static
      */
-    public static function json($data = null, int $status = 200, array $headers = [])
+    public static function json(mixed $data = null, int $status = 200, array $headers = [])
     {
         $headers['Content-Type'] = 'application/json';
 
@@ -87,11 +57,6 @@ class Response
 
     /**
      * Create a new "not found" response.
-     *
-     * @param  string  $message
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function notFound(string $message = 'Resource not found', array $headers = [])
     {
@@ -100,12 +65,6 @@ class Response
 
     /**
      * Create a new error response.
-     *
-     * @param  string  $message
-     * @param  int  $status
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function error(string $message, int $status = 400, array $headers = [])
     {
@@ -117,11 +76,6 @@ class Response
 
     /**
      * Create a new "unauthorized" response.
-     *
-     * @param  string  $message
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function unauthorized(string $message = 'Unauthorized', array $headers = [])
     {
@@ -130,11 +84,6 @@ class Response
 
     /**
      * Create a new "forbidden" response.
-     *
-     * @param  string  $message
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function forbidden(string $message = 'Forbidden', array $headers = [])
     {
@@ -143,10 +92,6 @@ class Response
 
     /**
      * Create a new "no content" response.
-     *
-     * @param  array  $headers
-     *
-     * @return static
      */
     public static function noContent(array $headers = [])
     {
@@ -155,27 +100,16 @@ class Response
 
     /**
      * Create a new "created" response.
-     *
-     * @param  mixed  $data
-     * @param  array  $headers
-     *
-     * @return static
      */
-    public static function created($data = null, array $headers = [])
+    public static function created(mixed $data = null, array $headers = [])
     {
         return static::success($data, 201, $headers);
     }
 
     /**
      * Create a new successful response.
-     *
-     * @param  mixed  $data
-     * @param  int  $status
-     * @param  array  $headers
-     *
-     * @return static
      */
-    public static function success($data = null, int $status = 200, array $headers = [])
+    public static function success(mixed $data = null, int $status = 200, array $headers = [])
     {
         return static::json([
             'success' => true,
@@ -185,23 +119,14 @@ class Response
 
     /**
      * Create a new "accepted" response.
-     *
-     * @param  mixed  $data
-     * @param  array  $headers
-     *
-     * @return static
      */
-    public static function accepted($data = null, array $headers = [])
+    public static function accepted(mixed $data = null, array $headers = [])
     {
         return static::success($data, 202, $headers);
     }
 
     /**
      * Add multiple headers to the response.
-     *
-     * @param  array  $headers
-     *
-     * @return $this
      */
     public function withHeaders(array $headers)
     {
@@ -214,11 +139,6 @@ class Response
 
     /**
      * Add a header to the response.
-     *
-     * @param  string  $name
-     * @param  string  $value
-     *
-     * @return $this
      */
     public function header(string $name, string $value)
     {
@@ -229,8 +149,6 @@ class Response
 
     /**
      * Get the response status code.
-     *
-     * @return int
      */
     public function getStatusCode()
     {
@@ -239,10 +157,6 @@ class Response
 
     /**
      * Set the response status code.
-     *
-     * @param  int  $statusCode
-     *
-     * @return $this
      */
     public function setStatusCode(int $statusCode)
     {
@@ -253,8 +167,6 @@ class Response
 
     /**
      * Get the response data.
-     *
-     * @return mixed
      */
     public function getData()
     {
@@ -263,12 +175,8 @@ class Response
 
     /**
      * Set the response data.
-     *
-     * @param  mixed  $data
-     *
-     * @return $this
      */
-    public function setData($data)
+    public function setData(mixed $data)
     {
         $this->data = $data;
 
@@ -277,8 +185,6 @@ class Response
 
     /**
      * Get the response headers.
-     *
-     * @return array
      */
     public function getHeaders()
     {
@@ -287,8 +193,6 @@ class Response
 
     /**
      * Convert the response to a WordPress REST API response.
-     *
-     * @return \WP_REST_Response
      */
     public function toWordPress()
     {

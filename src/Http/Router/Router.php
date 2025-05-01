@@ -134,17 +134,17 @@ class Router
      *
      * @return array
      */
-    protected static function mergeWithLastGroup(array $attributes)
+    protected static function mergeWithLastGroup(array $attributes): array
     {
         $lastGroup = end(self::$groupStack);
 
         // Handle prefix merging
-        if (isset($lastGroup['prefix']) && isset($attributes['prefix'])) {
+        if (isset($lastGroup['prefix'], $attributes['prefix'])) {
             $attributes['prefix'] = trim($lastGroup['prefix'], '/') . '/' . trim($attributes['prefix'], '/');
         }
 
         // Handle middleware merging
-        if (isset($lastGroup['middleware']) && isset($attributes['middleware'])) {
+        if (isset($lastGroup['middleware'], $attributes['middleware'])) {
             $attributes['middleware'] = array_merge(
                 (array)$lastGroup['middleware'],
                 (array)$attributes['middleware']
@@ -152,7 +152,7 @@ class Router
         }
 
         // Handle namespace merging
-        if (isset($lastGroup['namespace']) && isset($attributes['namespace'])) {
+        if (isset($lastGroup['namespace'], $attributes['namespace'])) {
             if (str_starts_with($attributes['namespace'], '\\')) {
                 // If the namespace starts with \, it's absolute
                 // Do nothing to merge
@@ -163,7 +163,7 @@ class Router
         }
 
         // Handle where conditions merging
-        if (isset($lastGroup['where']) && isset($attributes['where'])) {
+        if (isset($lastGroup['where'], $attributes['where'])) {
             $attributes['where'] = array_merge(
                 (array)$lastGroup['where'],
                 (array)$attributes['where']
@@ -277,18 +277,18 @@ class Router
      *
      * @return array
      */
-    protected static function parseAction($action)
+    protected static function parseAction(mixed $action): array
     {
         // If the action is a callable, wrap it in an array
-        if (is_callable($action) && ! is_string($action)) {
+        if (is_callable($action) && !is_string($action) && !is_array($action)) {
             return ['callback' => $action];
         }
 
         // If the action is a string...
         if (is_string($action)) {
             // Check if it's a Controller@method format
-            if (strpos($action, '@') !== false) {
-                list($controller, $method) = explode('@', $action, 2);
+            if (str_contains($action, '@')) {
+                [$controller, $method] = explode('@', $action, 2);
 
                 return [
                     'controller' => $controller,
@@ -302,9 +302,12 @@ class Router
 
         // Handle [ClassName::class, 'methodName'] format
         if (
-            is_array($action) && count($action) === 2 && isset($action[0]) && isset($action[1]) && is_string(
-                $action[0]
-            ) && is_string($action[1])
+            is_array($action) &&
+            count($action) === 2 &&
+            isset($action[0]) &&
+            isset($action[1]) &&
+            is_string($action[0]) &&
+            is_string($action[1])
         ) {
             return [
                 'controller' => $action[0],
@@ -514,30 +517,59 @@ class Router
      * @param  bool  $absolute
      *
      * @return string
+     * @throws \InvalidArgumentException If route collection is not initialized or route is not found
      */
-    public static function url(string $name, array $parameters = [], bool $absolute = true)
+    public static function url(string $name, array $parameters = [], bool $absolute = true): string
     {
-        if (! self::$routes) {
+        if (!self::$routes) {
             throw new \InvalidArgumentException("Route collection not initialized.");
         }
 
         $route = self::$routes->getByName($name);
 
-        if (! $route) {
+        if (!$route) {
             throw new \InvalidArgumentException("Route [{$name}] not defined.");
         }
 
         // Get the URI pattern
         $uri = $route->getUri();
 
-        // Replace parameter placeholders
-        foreach ($parameters as $key => $value) {
-            $uri = str_replace("{{$key}}", $value, $uri);
-            $uri = str_replace("{{$key}?}", $value, $uri);
-        }
+        // Track which parameters were used in the URI
+        $usedParameters = [];
 
-        // Remove any remaining optional parameters
-        $uri = preg_replace('/\/{[^\/]+\?}/', '', $uri);
+        // Replace named parameters
+        $uri = preg_replace_callback(
+            '/{\s*([a-z0-9_]+)(\?)?\s*}/i',
+            function ($matches) use ($parameters, &$usedParameters) {
+                $paramName = $matches[1];
+                $isOptional = isset($matches[2]) && $matches[2] === '?';
+
+                // Check if the parameter exists in the provided parameters
+                if (isset($parameters[$paramName])) {
+                    $usedParameters[$paramName] = true;
+                    return $parameters[$paramName];
+                }
+
+                // Check if it's an optional parameter
+                if ($isOptional) {
+                    return '';
+                }
+
+                // Parameter is required but not provided
+                throw new \InvalidArgumentException("Required parameter [{$paramName}] not provided.");
+            },
+            $uri
+        );
+
+        // Clean up any empty segments from optional parameters
+        $uri = preg_replace('#/+#', '/', $uri);
+        $uri = rtrim($uri, '/');
+
+        // Add any remaining parameters as query string
+        $queryParams = array_diff_key($parameters, $usedParameters);
+        if (!empty($queryParams)) {
+            $uri .= '?' . http_build_query($queryParams);
+        }
 
         // Add the base URL if the absolute flag is true
         if ($absolute) {

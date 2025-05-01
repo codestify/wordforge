@@ -10,22 +10,14 @@ namespace WordForge\Http\Router;
 class RouteGroup
 {
     /**
-     * The attributes for the route group.
-     *
-     * @var array
-     */
-    protected $attributes;
-
-    /**
      * Create a new route group instance.
-     *
-     * @param  array  $attributes
-     *
-     * @return void
      */
-    public function __construct(array $attributes = [])
-    {
-        $this->attributes = $attributes;
+    public function __construct(
+        /**
+         * The attributes for the route group.
+         */
+        protected array $attributes = []
+    ) {
     }
 
     /**

@@ -14,25 +14,23 @@ class ServiceManager
 {
     /**
      * Registered services
-     * @var array
      */
-    protected static $services = [];
+    protected static array $services = [];
 
     /**
      * Resolved instances
-     * @var array
      */
-    protected static $instances = [];
+    protected static array $instances = [];
 
     /**
      * Get a service
      *
-     * @param  string  $name
      * @param  array  $params
      *
      * @return mixed
+     * @throws \Exception
      */
-    public static function get($name, ...$params)
+    public static function get(string $name, ...$params): mixed
     {
         if (! self::has($name)) {
             throw new \Exception("Service '$name' not registered");
@@ -43,25 +41,16 @@ class ServiceManager
 
     /**
      * Check if a service exists
-     *
-     * @param  string  $name
-     *
-     * @return bool
      */
-    public static function has($name)
+    public static function has(string $name): bool
     {
         return isset(self::$services[$name]);
     }
 
     /**
      * Set an instance directly
-     *
-     * @param  string  $name
-     * @param  mixed  $instance
-     *
-     * @return void
      */
-    public static function instance($name, $instance)
+    public static function instance(string $name, mixed $instance): void
     {
         self::$instances[$name] = $instance;
 
@@ -72,13 +61,8 @@ class ServiceManager
 
     /**
      * Register a singleton service
-     *
-     * @param  string  $name
-     * @param  callable  $factory
-     *
-     * @return void
      */
-    public static function singleton($name, callable $factory)
+    public static function singleton(string $name, callable $factory): void
     {
         self::register($name, function (...$args) use ($factory, $name) {
             if (! isset(self::$instances[$name])) {
@@ -91,23 +75,16 @@ class ServiceManager
 
     /**
      * Register a service factory
-     *
-     * @param  string  $name
-     * @param  callable  $factory
-     *
-     * @return void
      */
-    public static function register($name, callable $factory)
+    public static function register(string $name, callable $factory): void
     {
         self::$services[$name] = $factory;
     }
 
     /**
      * Clear all services (mainly for testing)
-     *
-     * @return void
      */
-    public static function clear()
+    public static function clear(): void
     {
         self::$services  = [];
         self::$instances = [];

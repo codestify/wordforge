@@ -23,7 +23,7 @@ class RouteTest extends TestCase
 
         // Assert
         $this->assertEquals($uri, $route->getUri());
-        $this->assertEquals('(?P<id>(\d+))', $route->getWordPressPattern());
+        $this->assertEquals('(?P<id>[0-9]+)', $route->getWordPressPattern());
     }
 
     /**
@@ -33,18 +33,18 @@ class RouteTest extends TestCase
     {
         $route = new Route(['GET'], 'posts/{id}', 'PostController@show', 'wordforge/v1');
 
-        $route->where('id', '(\d+)');
+        $route->where('id', '\d+');
 
-        $this->assertStringContainsString('(?P<id>(\d+))', $route->getWordPressPattern());
+        $this->assertStringContainsString('(?P<id>[0-9]+)', $route->getWordPressPattern());
 
         // Test with array of where constraints
         $route = new Route(['GET'], 'posts/{category}/{slug}', 'PostController@show', 'wordforge/v1');
         $route->where([
-            'category' => '([a-z]+)',
-            'slug'     => '([a-z0-9-]+)'
+            'category' => '[a-z]+',
+            'slug'     => '[a-z0-9-]+'
         ]);
 
-        $this->assertEquals('posts/(?P<category>([a-z]+))/(?P<slug>([a-z0-9-]+))', $route->getWordPressPattern());
+        $this->assertEquals('posts/(?P<category>[a-z]+)/(?P<slug>[a-z0-9-]+)', $route->getWordPressPattern());
 
         // Test method chaining
         $route = new Route(['GET'], 'posts/{id}', 'PostController@show', 'wordforge/v1');
@@ -125,8 +125,8 @@ class RouteTest extends TestCase
 
         // Assert
         $this->assertCount(2, $combinations);
-        $this->assertContains('posts/(?P<category>([^/]+))', $combinations);
-        $this->assertContains('posts/(?P<category>([^/]+))/(?P<slug>([a-z0-9-]+))', $combinations);
+        $this->assertContains('posts/(?P<category>[^/]+)', $combinations);
+        $this->assertContains('posts/(?P<category>[^/]+)/(?P<slug>[a-z0-9-]+)', $combinations);
 
         // Test with multiple optional parameters
         $route        = new Route(['GET'], 'posts/{category?}/{year?}/{slug?}', 'PostController@show', 'wordforge/v1');
@@ -315,34 +315,34 @@ class RouteTest extends TestCase
         $result = $method->invoke($route, '{id}');
         // Check if result is an array (new implementation) or string (old implementation)
         if (is_array($result)) {
-            $this->assertEquals('(?P<id>(\d+))', $result['pattern']);
+            $this->assertEquals('(?P<id>[0-9]+)', $result['pattern']);
         } else {
-            $this->assertEquals('(?P<id>(\d+))', $result);
+            $this->assertEquals('(?P<id>[0-9]+)', $result);
         }
 
         // Test with pattern constraint
-        $route->where('id', '(\d+)');
+        $route->where('id', '\d+');
         $result = $method->invoke($route, '{id}');
         if (is_array($result)) {
-            $this->assertEquals('(?P<id>(\d+))', $result['pattern']);
+            $this->assertEquals('(?P<id>[0-9]+)', $result['pattern']);
         } else {
-            $this->assertEquals('(?P<id>(\d+))', $result);
+            $this->assertEquals('(?P<id>[0-9]+)', $result);
         }
 
         // Test optional parameter
         $result = $method->invoke($route, '{id?}');
         if (is_array($result)) {
-            $this->assertEquals('(?P<id>(\d+))?', $result['pattern']);
+            $this->assertEquals('(?P<id>[0-9]+)?', $result['pattern']);
         } else {
-            $this->assertEquals('(?P<id>(\d+))?', $result);
+            $this->assertEquals('(?P<id>[0-9]+)?', $result);
         }
 
         // Test multiple parameters
         $result = $method->invoke($route, '{category}/{slug}');
         if (is_array($result)) {
-            $this->assertEquals('(?P<category>([^/]+))/(?P<slug>([a-z0-9-]+))', $result['pattern']);
+            $this->assertEquals('(?P<category>[^/]+)/(?P<slug>[a-z0-9-]+)', $result['pattern']);
         } else {
-            $this->assertEquals('(?P<category>([^/]+))/(?P<slug>([a-z0-9-]+))', $result);
+            $this->assertEquals('(?P<category>[^/]+)/(?P<slug>[a-z0-9-]+)', $result);
         }
     }
 }

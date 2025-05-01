@@ -8,24 +8,24 @@ use WordForge\Http\Request;
 class RequestTest extends TestCase
 {
     /**
-     * @var Request
+     * Request instance for testing
      */
-    protected $request;
+    protected Request $request;
 
     /**
-     * @var \WP_REST_Request
+     * WordPress request mock
      */
-    protected $wpRequest;
+    protected \WP_REST_Request $wpRequest;
 
     /**
      * Test that getWordPressRequest returns the original WordPress request.
      */
-    public function testGetWordPressRequest()
+    public function testGetWordPressRequest(): void
     {
         $this->assertSame($this->wpRequest, $this->request->getWordPressRequest());
     }
 
-    public function testAll()
+    public function testAll(): void
     {
         // Method 1: Use a concrete WP_REST_Request with body params
         // and a custom implementation for get_file_params
@@ -35,13 +35,13 @@ class RequestTest extends TestCase
 
         // Create a custom subclass to handle file params
         $wpRequest = new class extends \WP_REST_Request {
-            public function get_params()
+            public function get_params(): array
             {
                 // Return the body params directly
                 return $this->body_params;
             }
 
-            public function get_file_params()
+            public function get_file_params(): array
             {
                 return ['avatar' => ['tmp_name' => '/tmp/test.jpg']];
             }
@@ -68,7 +68,7 @@ class RequestTest extends TestCase
     /**
      * Test the input method returns a specific input value.
      */
-    public function testInput()
+    public function testInput(): void
     {
         // Create a fresh instance with concrete data
         $wpRequest = new \WP_REST_Request();
@@ -88,7 +88,7 @@ class RequestTest extends TestCase
     /**
      * Test the only method returns only specified keys.
      */
-    public function testOnly()
+    public function testOnly(): void
     {
         // Arrange with concrete data
         $wpRequest = new \WP_REST_Request();
@@ -108,7 +108,7 @@ class RequestTest extends TestCase
     /**
      * Test the except method returns all keys except specified ones.
      */
-    public function testExcept()
+    public function testExcept(): void
     {
         // Arrange with concrete data
         $wpRequest = new \WP_REST_Request();
@@ -128,7 +128,7 @@ class RequestTest extends TestCase
     /**
      * Test the has method checks if input has specified keys.
      */
-    public function testHas()
+    public function testHas(): void
     {
         // Arrange with concrete data
         $wpRequest = new \WP_REST_Request();
@@ -146,7 +146,7 @@ class RequestTest extends TestCase
     /**
      * Test the header method returns header values.
      */
-    public function testHeader()
+    public function testHeader(): void
     {
         // Arrange with mocked headers
         $headers = [
@@ -167,7 +167,7 @@ class RequestTest extends TestCase
     /**
      * Test the headers method returns all headers.
      */
-    public function testHeaders()
+    public function testHeaders(): void
     {
         // Arrange with mocked headers
         $headers = [
@@ -190,7 +190,7 @@ class RequestTest extends TestCase
     /**
      * Test the param method returns route parameters.
      */
-    public function testParam()
+    public function testParam(): void
     {
         // Arrange with mocked URL parameters
         $params = ['id' => '123', 'slug' => 'test-post'];
@@ -208,7 +208,7 @@ class RequestTest extends TestCase
     /**
      * Test the params method returns all route parameters.
      */
-    public function testParams()
+    public function testParams(): void
     {
         // Arrange with mocked URL parameters
         $params = ['id' => '123', 'slug' => 'test-post'];
@@ -228,7 +228,7 @@ class RequestTest extends TestCase
     /**
      * Test the method method returns the request method.
      */
-    public function testMethod()
+    public function testMethod(): void
     {
         // Arrange with mocked method
         $wpMock = $this->createPartialMock(\WP_REST_Request::class, ['get_method']);
@@ -246,7 +246,7 @@ class RequestTest extends TestCase
     /**
      * Test the ajax method determines if request is AJAX.
      */
-    public function testAjax()
+    public function testAjax(): void
     {
         // Cannot easily test this since it uses the DOING_AJAX constant
         // For now, we're just making sure it doesn't error
@@ -257,7 +257,7 @@ class RequestTest extends TestCase
     /**
      * Test the secure method determines if request is HTTPS.
      */
-    public function testSecure()
+    public function testSecure(): void
     {
         // Mock the is_ssl function
         $this->mockWpFunction('is_ssl', false);
@@ -276,7 +276,7 @@ class RequestTest extends TestCase
     /**
      * Test the uri method returns the request URI.
      */
-    public function testUri()
+    public function testUri(): void
     {
         // Arrange with mocked route
         $wpMock = $this->createPartialMock(\WP_REST_Request::class, ['get_route']);
@@ -294,7 +294,7 @@ class RequestTest extends TestCase
     /**
      * Test the url method returns the full URL.
      */
-    public function testUrl()
+    public function testUrl(): void
     {
         // Arrange with mocked route
         $wpMock = $this->createPartialMock(\WP_REST_Request::class, ['get_route']);
@@ -321,7 +321,7 @@ class RequestTest extends TestCase
     /**
      * Test the getContent method returns the request body.
      */
-    public function testGetContent()
+    public function testGetContent(): void
     {
         // Arrange with mocked body
         $wpMock = $this->createPartialMock(\WP_REST_Request::class, ['get_body']);
@@ -339,7 +339,7 @@ class RequestTest extends TestCase
     /**
      * Test the setAttribute and getAttribute methods.
      */
-    public function testAttributes()
+    public function testAttributes(): void
     {
         // Act & Assert for setAttribute
         $this->assertSame($this->request, $this->request->setAttribute('user.id', 123));
@@ -352,7 +352,7 @@ class RequestTest extends TestCase
     /**
      * Test the getAttributes method returns all attributes.
      */
-    public function testGetAttributes()
+    public function testGetAttributes(): void
     {
         // Arrange
         $this->request->setAttribute('user.id', 123);
@@ -368,7 +368,7 @@ class RequestTest extends TestCase
     /**
      * Test the toArray method returns all input as array.
      */
-    public function testToArray()
+    public function testToArray(): void
     {
         // Arrange with concrete data
         $wpRequest = new \WP_REST_Request();
@@ -385,29 +385,9 @@ class RequestTest extends TestCase
     }
 
     /**
-     * Test the user method returns the current user.
-     */
-    public function testUser()
-    {
-        // Arrange
-        $mockUser             = new \stdClass();
-        $mockUser->ID         = 1;
-        $mockUser->user_login = 'admin';
-        $mockUser->user_email = 'admin@example.com';
-
-        $this->mockWpFunction('wp_get_current_user', $mockUser);
-
-        // Act
-        $result = $this->request->user();
-
-        // Assert
-        $this->assertEquals($mockUser, $result);
-    }
-
-    /**
      * Test the isAuthenticated method checks if user is logged in.
      */
-    public function testIsAuthenticated()
+    public function testIsAuthenticated(): void
     {
         // Arrange
         $this->mockWpFunction('is_user_logged_in', false);

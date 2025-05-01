@@ -32,14 +32,13 @@ abstract class FormRequest extends Request
      * @param  array  $messages
      * @param  array  $customAttributes
      *
-     * @return array|bool
+     * @return bool
+     * @throws \WordForge\Validation\ValidationException
      */
-    public function validate(array $rules, array $messages = [], array $customAttributes = [])
+    public function validate(array $rules, array $messages = [], array $customAttributes = []): bool
     {
         if (! $this->authorize()) {
-            return [
-                'message' => 'Unauthorized'
-            ];
+            throw new \RuntimeException('Unauthorized');
         }
 
         $data = $this->all();
@@ -52,7 +51,7 @@ abstract class FormRequest extends Request
         );
 
         if ($validator->fails()) {
-            return $validator->errors();
+            throw new \WordForge\Validation\ValidationException($validator);
         }
 
         return true;
@@ -97,7 +96,7 @@ abstract class FormRequest extends Request
      *
      * @return array
      */
-    public function validated(array $rules, array $messages = [], array $customAttributes = [])
+    public function validated(array $rules, array $messages = [], array $customAttributes = []): array
     {
         $rules = $this->rules();
         $data  = $this->all();

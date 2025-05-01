@@ -17,40 +17,28 @@ class Request
 {
     /**
      * The underlying WordPress request.
-     *
-     * @var \WP_REST_Request
      */
     protected $wpRequest;
 
     /**
      * The request attributes.
-     *
-     * @var array
      */
     protected $attributes = [];
 
     /**
      * Cached request data.
-     *
-     * @var array|null
      */
     protected $cachedData = null;
 
     /**
      * Parameter converter instance.
-     *
-     * @var ParameterConverter
      */
-    protected $parameterConverter;
+    protected ParameterConverter $parameterConverter;
 
     /**
      * Create a new Request instance.
-     *
-     * @param  \WP_REST_Request  $wpRequest
-     *
-     * @return void
      */
-    public function __construct(\WP_REST_Request $wpRequest)
+    public function __construct($wpRequest)
     {
         $this->wpRequest = $wpRequest;
         $this->parameterConverter = new ParameterConverter();
@@ -58,8 +46,6 @@ class Request
 
     /**
      * Get the WordPress request instance.
-     *
-     * @return \WP_REST_Request
      */
     public function getWordPressRequest()
     {
@@ -74,7 +60,7 @@ class Request
      *
      * @return mixed
      */
-    public function input($key = null, $default = null)
+    public function input(?string $key = null, mixed $default = null)
     {
         $data = $this->all();
 
@@ -93,8 +79,6 @@ class Request
 
     /**
      * Get all input data from the request.
-     *
-     * @return array
      */
     public function all()
     {
@@ -132,8 +116,6 @@ class Request
 
     /**
      * Safely get JSON parameters from the request.
-     *
-     * @return array
      */
     protected function safelyGetJsonParams()
     {
@@ -178,13 +160,11 @@ class Request
     /**
      * Get a value using dot notation.
      *
-     * @param  array  $array
-     * @param  string  $key
      * @param  mixed  $default
      *
      * @return mixed
      */
-    protected function getDotNotationValue(array $array, string $key, $default = null)
+    protected function getDotNotationValue(array $array, string $key, mixed $default = null): mixed
     {
         $segments = explode('.', $key);
         $value    = $array;
@@ -203,10 +183,8 @@ class Request
      * Check if the request has a given input item.
      *
      * @param  string|array  $key
-     *
-     * @return bool
      */
-    public function has($key)
+    public function has(string|array $key)
     {
         $keys = is_array($key) ? $key : func_get_args();
         $data = $this->all();
@@ -231,10 +209,6 @@ class Request
 
     /**
      * Get multiple input values from the request.
-     *
-     * @param  array  $keys
-     *
-     * @return array
      */
     public function only(array $keys)
     {
@@ -263,12 +237,11 @@ class Request
      * Set an array item to a given value using "dot" notation.
      *
      * @param  array  $array
-     * @param  string  $key
      * @param  mixed  $value
      *
      * @return array
      */
-    protected function arraySet(&$array, $key, $value)
+    protected function arraySet(array &$array, ?string $key, mixed $value)
     {
         if (is_null($key)) {
             return $array = $value;
@@ -292,10 +265,6 @@ class Request
 
     /**
      * Get all input except for a specified array of items.
-     *
-     * @param  array  $keys
-     *
-     * @return array
      */
     public function except(array $keys)
     {
@@ -316,13 +285,8 @@ class Request
 
     /**
      * Unset an array item using "dot" notation.
-     *
-     * @param  array  $array
-     * @param  string  $key
-     *
-     * @return void
      */
-    protected function arrayUnset(&$array, $key)
+    protected function arrayUnset(array &$array, string $key)
     {
         $keys        = explode('.', $key);
         $lastSegment = array_pop($keys);
@@ -340,10 +304,8 @@ class Request
 
     /**
      * Get all headers from the request.
-     *
-     * @return array
      */
-    public function headers()
+    public function headers(): array
     {
         return $this->wpRequest->get_headers();
     }
@@ -351,12 +313,11 @@ class Request
     /**
      * Get a route parameter.
      *
-     * @param  string  $key
      * @param  mixed  $default
      *
      * @return mixed
      */
-    public function param(string $key, $default = null)
+    public function param(string $key, mixed $default = null): mixed
     {
         $params = $this->params();
 
@@ -384,8 +345,6 @@ class Request
 
     /**
      * Get all route parameters.
-     *
-     * @return array
      */
     public function params()
     {
@@ -397,8 +356,6 @@ class Request
 
     /**
      * Get the request method.
-     *
-     * @return string
      */
     public function method()
     {
@@ -407,19 +364,12 @@ class Request
 
     /**
      * Determine if the request is the result of an AJAX call.
-     *
-     * @return bool
      */
     public function ajax()
     {
         return defined('DOING_AJAX') && DOING_AJAX;
     }
 
-    /**
-     * Get the full URL for the request.
-     *
-     * @return string
-     */
     public function url()
     {
         $scheme = $this->secure() ? 'https' : 'http';
@@ -430,8 +380,6 @@ class Request
 
     /**
      * Determine if the request is over HTTPS.
-     *
-     * @return bool
      */
     public function secure()
     {
@@ -440,8 +388,6 @@ class Request
 
     /**
      * Get the request URI.
-     *
-     * @return string
      */
     public function uri()
     {
@@ -450,8 +396,6 @@ class Request
 
     /**
      * Get the request body content.
-     *
-     * @return string
      */
     public function getContent()
     {
@@ -461,12 +405,9 @@ class Request
     /**
      * Set a request attribute.
      *
-     * @param  string  $key
      * @param  mixed  $value
-     *
-     * @return $this
      */
-    public function setAttribute(string $key, $value)
+    public function setAttribute(string $key, mixed $value)
     {
         $this->attributes[$key] = $value;
 
@@ -476,20 +417,17 @@ class Request
     /**
      * Get a request attribute.
      *
-     * @param  string  $key
      * @param  mixed  $default
      *
      * @return mixed
      */
-    public function getAttribute(string $key, $default = null)
+    public function getAttribute(string $key, mixed $default = null)
     {
         return $this->attributes[$key] ?? $default;
     }
 
     /**
      * Get all request attributes.
-     *
-     * @return array
      */
     public function getAttributes()
     {
@@ -498,8 +436,6 @@ class Request
 
     /**
      * Convert the request instance to an array.
-     *
-     * @return array
      */
     public function toArray()
     {
@@ -508,10 +444,6 @@ class Request
 
     /**
      * Check if the authenticated user has a given capability.
-     *
-     * @param  string  $capability
-     *
-     * @return bool
      */
     public function userCan(string $capability)
     {
@@ -520,8 +452,6 @@ class Request
 
     /**
      * Get the current authenticated user.
-     *
-     * @return \WP_User|null
      */
     public function user()
     {
@@ -530,28 +460,22 @@ class Request
 
     /**
      * Determine if the user is authenticated.
-     *
-     * @return bool
      */
-    public function isAuthenticated()
+    public function isAuthenticated(): bool
     {
         return is_user_logged_in();
     }
 
     /**
      * Get the IP address of the client.
-     *
-     * @return string|null
      */
-    public function ip()
+    public function ip(): ?string
     {
         return $_SERVER['REMOTE_ADDR'] ?? null;
     }
 
     /**
      * Determine if the current request is asking for JSON.
-     *
-     * @return bool
      */
     public function wantsJson()
     {
@@ -564,12 +488,11 @@ class Request
     /**
      * Get a header from the request.
      *
-     * @param  string  $key
      * @param  mixed  $default
      *
      * @return mixed
      */
-    public function header(string $key, $default = null)
+    public function header(string $key, mixed $default = null)
     {
         $headers = $this->wpRequest->get_headers();
         $key     = strtolower($key);
@@ -579,8 +502,6 @@ class Request
 
     /**
      * Determine if the request is a JSON request.
-     *
-     * @return bool
      */
     public function isJson()
     {
@@ -593,11 +514,6 @@ class Request
     /**
      * Get the validated data from the request.
      *
-     * @param  array  $rules
-     * @param  array  $messages
-     * @param  array  $customAttributes
-     *
-     * @return array
      * @throws ValidationException
      */
     public function validated(array $rules, array $messages = [], array $customAttributes = [])
@@ -628,11 +544,7 @@ class Request
     /**
      * Validate the given request with the given validation rules.
      *
-     * @param  array  $rules
-     * @param  array  $messages
-     * @param  array  $customAttributes
-     *
-     * @return bool|ValidationException
+     * @throws ValidationException
      */
     public function validate(array $rules, array $messages = [], array $customAttributes = [])
     {

@@ -11,10 +11,8 @@ abstract class ServiceProvider
 {
     /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         //
     }
@@ -32,33 +30,21 @@ abstract class ServiceProvider
 
     /**
      * Helper to register a service
-     *
-     * @param  string  $name
-     * @param  callable  $factory
-     *
-     * @return void
      */
-    protected function registerService($name, callable $factory)
+    protected function registerService(string $name, callable $factory): void
     {
         ServiceManager::register($name, $factory);
     }
 
     /**
      * Register any application services.
-     *
-     * @return void
      */
     abstract public function register(): void;
 
     /**
      * Helper to register a singleton
-     *
-     * @param  string  $name
-     * @param  callable  $factory
-     *
-     * @return void
      */
-    protected function registerSingleton($name, callable $factory)
+    protected function registerSingleton(string $name, callable $factory): void
     {
         ServiceManager::singleton($name, $factory);
     }

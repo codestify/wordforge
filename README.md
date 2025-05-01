@@ -1,4 +1,102 @@
-# WordForge: An Opinionated SLIM MVC architecture for building WordPress Plugins
+# WordForge
+
+A Laravel-inspired routing system for WordPress REST API with PHP 8 compatibility.
+
+## Features
+
+- Laravel-style route definitions
+- Parameter constraints and validation
+- Route groups and middleware
+- Resource routing
+- Named routes with URL generation
+- Fully PHP 8 compatible with modern features:
+  - Union types
+  - Constructor property promotion
+  - Named arguments
+  - Match expressions
+  - Nullsafe operator
+  - Strict type declarations
+
+## Usage
+
+### Basic Routes
+
+```php
+use Route;
+
+// Define a simple GET route
+Route::get('posts', 'PostController@index');
+
+// Route with parameters
+Route::get('posts/{id}', 'PostController@show');
+
+// Route with parameter constraints
+Route::get('posts/{year}/{month}', 'PostController@archive')
+    ->where('year', '[0-9]{4}')
+    ->where('month', '[0-9]{1,2}');
+```
+
+### Route Groups
+
+```php
+Route::group(['prefix' => 'api/v1', 'middleware' => 'auth'], function () {
+    Route::get('users', 'UserController@index');
+    Route::post('users', 'UserController@store');
+    Route::get('users/{id}', 'UserController@show');
+});
+```
+
+### Resource Routes
+
+```php
+// Define a resource route
+Route::resource('posts', 'PostController');
+
+// Define an API resource route (no create/edit endpoints)
+Route::apiResource('users', 'UserController');
+```
+
+### Named Routes
+
+```php
+// Named route
+Route::get('posts/{slug}', 'PostController@showBySlug')->name('posts.slug');
+
+// Generate URL by route name
+$url = Route::url('posts.slug', ['slug' => 'hello-world']);
+```
+
+## Parameter Conversion
+
+WordForge automatically converts Laravel-style route parameters to WordPress REST API compatible format:
+
+| Laravel Format | WordPress Format |
+|----------------|------------------|
+| `posts/{id}` | `posts/(?P<id>[0-9]+)` |
+| `posts/{slug}` | `posts/(?P<slug>[a-z0-9-]+)` |
+| `posts/{postId}` | `posts/(?P<post_id>[0-9]+)` |
+| `posts/{year}/{month?}` | `posts/(?P<year>[0-9]{4})(/(?P<month>[0-9]{1,2}))?` |
+
+## Middleware
+
+```php
+// Define middleware directly on routes
+Route::get('profile', 'ProfileController@show')->middleware('auth');
+
+// You can also pass an array of middleware
+Route::get('admin', 'AdminController@index')->middleware(['auth', 'admin']);
+```
+
+## Installation
+
+```bash
+composer require your-vendor/wordforge
+```
+
+## Requirements
+
+- PHP 8.0 or higher
+- WordPress 5.5 or higher: An Opinionated SLIM MVC architecture for building WordPress Plugins
 
 [![CI Status](https://github.com/codestify/wordforge/actions/workflows/ci.yml/badge.svg)](https://github.com/codestify/wordforge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -14,6 +112,7 @@ WordForge is a simple, opinionated SLIM MVC framework for WordPress that brings 
 - [Getting Started](#getting-started)
   - [Basic Setup](#basic-setup)
   - [Creating Routes](#creating-routes)
+  - [Route Parameter Constraints](#route-parameter-constraints)
   - [Creating Controllers](#creating-controllers)
   - [Form Request Validation](#form-request-validation)
   - [Using the Query Builder](#using-the-query-builder)
@@ -201,6 +300,71 @@ If your routes aren't working after registering your plugin and service provider
    ```
    https://your-site.com/wp-json/{namespace}/{route-path}
    ```
+
+### Route Parameter Constraints
+
+WordForge provides a Laravel-inspired way to define route parameter constraints using the `where` method. When building WordPress REST API endpoints, you should use proper regex patterns to constrain your route parameters for security and validation.
+
+#### Common Regex Patterns for Route Parameters
+
+While WordPress REST API normally requires complex regex syntax, WordForge simplifies this to be more Laravel-like. Here are the recommended patterns to use with the `where` method:
+
+```php
+// For numeric IDs (post_id, user_id, etc.)
+Route::get('posts/{id}', [PostController::class, 'show'])
+    ->where('id', '\d+');  // or '[0-9]+'
+
+// For alphanumeric identifiers
+Route::get('products/{sku}', [ProductController::class, 'show'])
+    ->where('sku', '[a-zA-Z0-9]+');
+
+// For slugs (letters, numbers, and dashes)
+Route::get('categories/{slug}', [CategoryController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+');
+
+// For UUIDs
+Route::get('orders/{uuid}', [OrderController::class, 'show'])
+    ->where('uuid', '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+
+// For dates (YYYY-MM-DD)
+Route::get('reports/{date}', [ReportController::class, 'show'])
+    ->where('date', '[0-9]{4}-[0-9]{2}-[0-9]{2}');
+
+// For multiple constraints
+Route::get('posts/{category}/{slug}', [PostController::class, 'categoryPost'])
+    ->where([
+        'category' => '[a-z0-9-]+',
+        'slug' => '[a-z0-9-]+'
+    ]);
+```
+
+#### WordPress vs WordForge Pattern Syntax
+
+WordForge simplifies WordPress's complex regex parameter handling:
+
+1. **WordPress REST API** requires patterns in the format: `'(?P<parameter_name>pattern)'`
+2. **WordForge** uses a Laravel-inspired syntax: `->where('parameter_name', 'pattern')`
+
+Behind the scenes, WordForge transforms your simple constraints into the complex WordPress format, making your routes more readable and maintainable.
+
+#### Default Parameter Patterns
+
+WordForge provides sensible defaults for common parameter names:
+
+- `id` parameters: matches digits (`\d+`)
+- `slug` parameters: matches lowercase alphanumeric characters and dashes (`[a-z0-9-]+`)
+- `uuid` parameters: matches UUID format
+- Other parameters: matches anything except for slashes (`[^/]+`)
+
+#### Best Practices
+
+For consistency and security, we recommend following these patterns:
+- For ID fields: `\d+` or `[0-9]+`
+- For slug fields: `[a-z0-9-]+`
+- For alphanumeric fields: `[a-zA-Z0-9]+`
+- For named parameters: always apply appropriate constraints with the `where` method
+
+Using these patterns helps ensure your routes work correctly and securely with both WordForge and the WordPress REST API.
 
 ### Creating Controllers
 

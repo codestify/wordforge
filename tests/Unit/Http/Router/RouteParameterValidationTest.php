@@ -10,7 +10,7 @@ class RouteParameterValidationTest extends TestCase
     /**
      * Test that validates a parameter with a pattern that would cause a regex error
      */
-    public function testValidateParameterWithProblematicPattern()
+    public function testValidateParameterWithProblematicPattern(): void
     {
         // Create a route
         $route = new Route(['GET'], 'posts/{post_id}', 'PostController@show', 'wordforge/v1');
